@@ -95,6 +95,7 @@ jobs:
           path: cache/database
           key: database-${{ env.databaseServerType }}-${{ env.databaseServerVersion }}-v4
       - name: Install Database Server
+        if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         run: |
           $waitMinutes = 5
@@ -114,7 +115,7 @@ jobs:
               New-Item -ItemType Directory './cache/database'
             }
 
-            if ($os -eq 'windows')
+            if ('${{ matrix.os }}' -like 'windows-*')
             {
               docker pull --platform linux '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
             }
@@ -128,7 +129,7 @@ jobs:
             dir './cache/database' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
           }
 
-          if ($os -eq 'windows')
+          if ('${{ matrix.os }}' -like 'windows-*')
           {
             docker run --platform linux --name '${{ env.databaseServerType }}' -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 -d '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
           }
@@ -149,9 +150,11 @@ jobs:
             exit 1
           }
       - name: Setup Database
+        if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         run: ${{ env.clientCommandPrefix }} -u root -pPassword12! -e "SET GLOBAL sql_mode = '${{ env.sqlMode }}'; SET GLOBAL max_connections = ${{ env.maxConnections }};"
       - name: Database Information
+        if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         run: ${{ env.clientCommandPrefix }} -u root -pPassword12! -e 'SHOW VARIABLES;'
       - name: Setup .NET SDK
