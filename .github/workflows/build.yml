@@ -114,13 +114,14 @@ jobs:
               New-Item -ItemType Directory './cache/database'
             }
 
-            docker pull --platform linux '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
-            docker save -o './cache/database/${{ env.databaseServerType }}_${{ env.databaseServerVersion }}.tar' '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}' --platform linux
+            $platformArg = $os -eq 'windows' ? '--platform linux' : ''
+            docker pull $platformArg '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+            docker save -o './cache/database/${{ env.databaseServerType }}_${{ env.databaseServerVersion }}.tar' '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
 
             dir './cache/database' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
           }
 
-          docker run --platform linux --name '${{ env.databaseServerType }}' -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 -d '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
+          docker run $platformArg --name '${{ env.databaseServerType }}' -e MYSQL_ROOT_PASSWORD=Password12! -p 127.0.0.1:3306:3306 -d '${{ env.databaseServerType }}:${{ env.databaseServerVersion }}'
           $startTime = Get-Date
 
           while (!($started = ${{ env.clientCommandPrefix }} --protocol=tcp -h localhost -P 3306 -u root -pPassword12! -e 'select 1;') -and ((Get-Date) - $startTime).TotalMinutes -lt $waitMinutes)
