@@ -70,7 +70,7 @@ jobs:
           $clientExecutable = $databaseServerType -eq 'mariadb' -and $databaseServerVersion.Split('.')[0] -ge 11 ? 'mariadb' : 'mysql'
           echo "clientExecutable=$clientExecutable" >> $env:GITHUB_ENV
 
-          $clientCommandPrefix = "docker exec '${{ env.databaseServerType }}' $clientExecutable"
+          $clientCommandPrefix = "docker exec '$databaseServerType' $clientExecutable"
           echo "clientCommandPrefix=$clientCommandPrefix" >> $env:GITHUB_ENV
       - name: Output Variables
         shell: pwsh
