@@ -209,13 +209,29 @@ WHERE ROUND(`b`.`Decimal`, 1) = 255.1
 """);
     }
 
-    // PostgreSQL only has round(v, s) over numeric, may be possible to cast back and forth though
-    public override Task Round_with_digits_double()
-        => AssertTranslationFailed(() => base.Round_with_digits_double());
+    public override async Task Round_with_digits_double()
+    {
+        await base.Round_with_digits_double();
 
-    // PostgreSQL only has round(v, s) over numeric, may be possible to cast back and forth though
-    public override Task Round_with_digits_float()
-        => AssertTranslationFailed(() => base.Round_with_digits_float());
+        AssertSql(
+            """
+SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
+FROM `BasicTypesEntities` AS `b`
+WHERE ROUND(`b`.`Double`, 1) = 255.09999999999999
+""");
+    }
+
+    public override async Task Round_with_digits_float()
+    {
+        await base.Round_with_digits_float();
+
+        AssertSql(
+            """
+SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
+FROM `BasicTypesEntities` AS `b`
+WHERE ROUND(CAST(`b`.`Float` AS double), 1) = 255.09999999999999
+""");
+    }
 
     public override async Task Truncate_decimal()
     {
@@ -364,13 +380,29 @@ WHERE (`b`.`Float` > 0) AND (LOG(`b`.`Float`) <> 0)
 """);
     }
 
-    // PostgreSQL only has log(x, base) over numeric, may be possible to cast back and forth though
-    public override Task Log_with_newBase()
-        => AssertTranslationFailed(() => base.Log_with_newBase());
+    public override async Task Log_with_newBase()
+    {
+        await base.Log_with_newBase();
 
-    // PostgreSQL only has log(x, base) over numeric, may be possible to cast back and forth though
-    public override Task Log_with_newBase_float()
-        => AssertTranslationFailed(() => base.Log_with_newBase_float());
+        AssertSql(
+            """
+SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
+FROM `BasicTypesEntities` AS `b`
+WHERE (`b`.`Double` > 0.0) AND ((LOG(7.0, `b`.`Double`) <> 0.0) OR LOG(7.0, `b`.`Double`) IS NULL)
+""");
+    }
+
+    public override async Task Log_with_newBase_float()
+    {
+        await base.Log_with_newBase_float();
+
+        AssertSql(
+            """
+SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
+FROM `BasicTypesEntities` AS `b`
+WHERE (`b`.`Float` > 0) AND ((LOG(7, `b`.`Float`) <> 0) OR LOG(7, `b`.`Float`) IS NULL)
+""");
+    }
 
     public override async Task Log10()
     {
