@@ -55,5 +55,9 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="4.14.0" />
     <PackageVersion Include="System.Text.Json" Version="10.0.0" />
+
+    <!-- Pinned to patch transitive vulnerability NU1903 (GHSA-23rf-6693-g89p and related)
+         pulled in by Microsoft.Build.Tasks.Core via Microsoft.CodeAnalysis.*. -->
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.18" />
   </ItemGroup>
 </Project>
