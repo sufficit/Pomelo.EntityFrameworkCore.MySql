@@ -547,12 +547,9 @@ FROM `TestEntityWithOwned` AS `t`
         await base.Parameter_collection_Contains_with_default_mode(mode);
         AssertSql(
             """
-@ints1='2'
-@ints2='999'
-
 SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
-WHERE `t`.`Id` IN (@ints1, @ints2)
+WHERE `t`.`Id` IN (2, 999)
 """);
     }
 
