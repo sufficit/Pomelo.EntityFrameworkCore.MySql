@@ -53,17 +53,25 @@ WHERE EXTRACT(second FROM `b`.`TimeOnly`) = 10
 """);
     }
 
-    // Translation not yet implemented
-    public override Task Millisecond()
-        => AssertTranslationFailed(() => base.Millisecond());
+    public override async Task Millisecond()
+    {
+        await base.Millisecond();
+
+        AssertSql(
+"""
+SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
+FROM `BasicTypesEntities` AS `b`
+WHERE (EXTRACT(microsecond FROM `b`.`TimeOnly`)) DIV (1000) = 123
+""");
+    }
 
     // Translation not yet implemented
     public override Task Microsecond()
-        => AssertTranslationFailed(() => base.Millisecond());
+        => AssertTranslationFailed(() => base.Microsecond());
 
     // Probably not relevant for PostgreSQL, which supports microsecond precision only
     public override Task Nanosecond()
-        => AssertTranslationFailed(() => base.Millisecond());
+        => AssertTranslationFailed(() => base.Nanosecond());
 
     public override async Task AddHours()
     {
@@ -185,7 +193,7 @@ WHERE `b`.`TimeSpan` < `b`.`TimeOnly`
 
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE `b`.`TimeSpan` = @time
+WHERE CAST(`b`.`TimeSpan` AS time) = @time
 """);
     }
 
@@ -200,7 +208,7 @@ WHERE `b`.`TimeSpan` = @time
 """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-ORDER BY `b`.`TimeSpan`, `b`.`Id`
+ORDER BY CAST(`b`.`TimeSpan` AS time), `b`.`Id`
 """);
     }
 

@@ -2213,6 +2213,48 @@ ALTER TABLE `Customers` ADD `Numbers` longtext CHARACTER SET utf8mb4 NOT NULL DE
 
         #endregion ToJson
 
+        public override async Task Create_table_with_complex_properties_mapped_to_json()
+        {
+            await base.Create_table_with_complex_properties_mapped_to_json();
+            AssertSql();
+        }
+
+        public override async Task Create_table_with_complex_properties_with_nested_collection_mapped_to_json()
+        {
+            await base.Create_table_with_complex_properties_with_nested_collection_mapped_to_json();
+            AssertSql();
+        }
+
+        public override async Task Create_table_with_optional_complex_type_with_required_properties()
+        {
+            await base.Create_table_with_optional_complex_type_with_required_properties();
+            AssertSql();
+        }
+
+        public override async Task Multiop_drop_table_and_create_the_same_table_in_one_migration()
+        {
+            await base.Multiop_drop_table_and_create_the_same_table_in_one_migration();
+            AssertSql();
+        }
+
+        public override async Task Multiop_create_table_and_drop_it_in_one_migration()
+        {
+            await base.Multiop_create_table_and_drop_it_in_one_migration();
+            AssertSql();
+        }
+
+        public override async Task Multiop_rename_table_and_drop()
+        {
+            await base.Multiop_rename_table_and_drop();
+            AssertSql();
+        }
+
+        public override async Task Multiop_rename_table_and_create_new_table_with_the_old_name()
+        {
+            await base.Multiop_rename_table_and_create_new_table_with_the_old_name();
+            AssertSql();
+        }
+
         [ConditionalFact]
         public virtual void Check_all_tests_overridden()
             => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());

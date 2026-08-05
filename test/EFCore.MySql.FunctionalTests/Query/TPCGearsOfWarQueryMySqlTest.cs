@@ -12648,6 +12648,42 @@ FROM `LocustHordes` AS `l`
         Assert.Equal("Unable to cast object of type 'System.Decimal' to type 'System.TimeSpan'.", exception.Message);
     }
 
+    public override async Task Conditional_Navigation_With_Trivial_Member_Access(bool async)
+    {
+        await base.Conditional_Navigation_With_Trivial_Member_Access(async);
+        AssertSql();
+    }
+
+    public override async Task Conditional_Navigation_With_Member_Access_On_Same_Type(bool async)
+    {
+        await base.Conditional_Navigation_With_Member_Access_On_Same_Type(async);
+        AssertSql();
+    }
+
+    public override async Task Conditional_Navigation_With_Member_Access_On_Related_Types(bool async)
+    {
+        await base.Conditional_Navigation_With_Member_Access_On_Related_Types(async);
+        AssertSql();
+    }
+
+    public override async Task Correlated_collections_on_RightJoin_with_predicate(bool async)
+    {
+        await base.Correlated_collections_on_RightJoin_with_predicate(async);
+        AssertSql();
+    }
+
+    public override async Task Coalesce_with_non_root_evaluatable_Convert(bool async)
+    {
+        await base.Coalesce_with_non_root_evaluatable_Convert(async);
+        AssertSql();
+    }
+
+    public override async Task Project_equality_with_value_converted_property(bool async)
+    {
+        await base.Project_equality_with_value_converted_property(async);
+        AssertSql();
+    }
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());

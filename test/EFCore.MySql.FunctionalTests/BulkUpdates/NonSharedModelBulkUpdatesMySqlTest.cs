@@ -18,6 +18,24 @@ public class NonSharedModelBulkUpdatesMySqlTest : NonSharedModelBulkUpdatesRelat
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
 
+    public override async Task Delete_with_view_mapping(bool async)
+    {
+        await base.Delete_with_view_mapping(async);
+        AssertSql();
+    }
+
+    public override async Task Update_with_view_mapping(bool async)
+    {
+        await base.Update_with_view_mapping(async);
+        AssertSql();
+    }
+
+    public override async Task Update_complex_type_with_view_mapping(bool async)
+    {
+        await base.Update_complex_type_with_view_mapping(async);
+        AssertSql();
+    }
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());

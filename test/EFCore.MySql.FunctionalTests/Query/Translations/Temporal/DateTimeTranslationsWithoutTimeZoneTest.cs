@@ -38,7 +38,7 @@ public class DateTimeTranslationsWithoutTimeZoneTest
 
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE CURRENT_TIMESTAMP(6) <> @myDatetime
+WHERE CURRENT_TIMESTAMP() <> @myDatetime
 """);
     }
 
@@ -56,7 +56,7 @@ WHERE CURRENT_TIMESTAMP(6) <> @myDatetime
 
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE UTC_TIMESTAMP(6) <> @myDatetime
+WHERE UTC_TIMESTAMP() <> @myDatetime
 """);
     }
 
@@ -182,9 +182,17 @@ WHERE EXTRACT(second FROM `b`.`DateTime`) = 10
 """);
     }
 
-    // SQL translation not implemented, too annoying
-    public override Task Millisecond()
-        => AssertTranslationFailed(() => base.Millisecond());
+    public override async Task Millisecond()
+    {
+        await base.Millisecond();
+
+        AssertSql(
+"""
+SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
+FROM `BasicTypesEntities` AS `b`
+WHERE (EXTRACT(microsecond FROM `b`.`DateTime`)) DIV (1000) = 123
+""");
+    }
 
     public override async Task TimeOfDay()
     {
@@ -198,19 +206,9 @@ WHERE CAST(`b`.`DateTime` AS time(6)) = TIME '00:00:00'
 """);
     }
 
-    public override async Task subtract_and_TotalDays()
-    {
-        await base.subtract_and_TotalDays();
-
-        AssertSql(
-            """
-@date='1997-01-01T00:00:00.0000000'
-
-SELECT b."Id", b."Bool", b."Byte", b."ByteArray", b."DateOnly", b."DateTime", b."DateTimeOffset", b."Decimal", b."Double", b."Enum", b."FlagsEnum", b."Float", b."Guid", b."Int", b."Long", b."Short", b."String", b."TimeOnly", b."TimeSpan"
-FROM "BasicTypesEntities" AS b
-WHERE date_part('epoch', b."DateTime" - @date) / 86400.0 > 365.0
-""");
-    }
+    // MySQL does not translate (DateTime - DateTime).TotalDays
+    public override Task subtract_and_TotalDays()
+        => AssertTranslationFailed(() => base.subtract_and_TotalDays());
 
     public override async Task Parse_with_constant()
     {

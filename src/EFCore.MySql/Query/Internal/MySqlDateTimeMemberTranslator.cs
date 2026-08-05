@@ -97,7 +97,18 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                             false);
 
                     case nameof(DateTime.TimeOfDay):
-                        return _sqlExpressionFactory.Convert(instance, returnType);
+                        // Use CAST(... AS time(6)) to preserve sub-second precision.
+                        return _sqlExpressionFactory.NullableFunction(
+                            "CAST",
+                            new[]
+                            {
+                                _sqlExpressionFactory.ComplexFunctionArgument(
+                                    new[] { instance, _sqlExpressionFactory.Fragment("AS time(6)") },
+                                    " ",
+                                    typeof(string))
+                            },
+                            returnType,
+                            false);
 
                     case nameof(DateTime.Now):
                         return _sqlExpressionFactory.NonNullableFunction(

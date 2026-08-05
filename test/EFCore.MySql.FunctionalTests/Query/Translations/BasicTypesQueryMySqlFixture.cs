@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestModels.BasicTypesModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
@@ -12,6 +13,23 @@ public class BasicTypesQueryMySqlFixture : BasicTypesQueryFixtureBase, ITestSqlL
 
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+    {
+        base.OnModelCreating(modelBuilder, context);
+
+        // MySQL datetime without precision truncates sub-second values.
+        // Use datetime(6) to preserve full .NET precision (down to 100ns ticks mapped to microseconds).
+        modelBuilder.Entity<BasicTypesEntity>().Property(b => b.DateTime).HasColumnType("datetime(6)");
+        modelBuilder.Entity<BasicTypesEntity>().Property(b => b.DateTimeOffset).HasColumnType("datetime(6)");
+        modelBuilder.Entity<BasicTypesEntity>().Property(b => b.TimeOnly).HasColumnType("time(6)");
+        modelBuilder.Entity<BasicTypesEntity>().Property(b => b.TimeSpan).HasColumnType("time(6)");
+
+        modelBuilder.Entity<NullableBasicTypesEntity>().Property(b => b.DateTime).HasColumnType("datetime(6)");
+        modelBuilder.Entity<NullableBasicTypesEntity>().Property(b => b.DateTimeOffset).HasColumnType("datetime(6)");
+        modelBuilder.Entity<NullableBasicTypesEntity>().Property(b => b.TimeOnly).HasColumnType("time(6)");
+        modelBuilder.Entity<NullableBasicTypesEntity>().Property(b => b.TimeSpan).HasColumnType("time(6)");
+    }
 
     protected override Task SeedAsync(BasicTypesContext context)
     {
@@ -28,18 +46,17 @@ public class BasicTypesQueryMySqlFixture : BasicTypesQueryFixtureBase, ITestSqlL
     {
         var data = (BasicTypesData)base.GetExpectedData();
 
+        // MySQL supports full microsecond precision (6 fractional digits) for datetime/time columns.
+        // We chop sub-microsecond precision (100ns ticks) because MySQL's maximum fractional precision is microseconds (6 digits),
+        // while .NET uses 100ns ticks (7 fractional digits).
         foreach (var item in data.BasicTypesEntities)
         {
-            // For all relevant temporal types, chop sub-microsecond precision which PostgreSQL does not support.
-            // Temporal types which aren't set (default) get mapped to -infinity on PostgreSQL; this value causes many tests to fail.
-
             if (item.DateTime == default)
             {
                 item.DateTime += TimeSpan.FromSeconds(1);
             }
 
-            // PostgreSQL maps DateTime to timestamptz by default, but that represents UTC timestamps which require DateTimeKind.Utc.
-            item.DateTime = DateTime.SpecifyKind(new DateTime(StripSubMicrosecond(item.DateTime.Ticks)), DateTimeKind.Utc);
+            item.DateTime = new DateTime(StripSubMicrosecond(item.DateTime.Ticks));
 
             if (item.DateOnly == default)
             {
@@ -54,9 +71,6 @@ public class BasicTypesQueryMySqlFixture : BasicTypesQueryFixtureBase, ITestSqlL
                 item.DateTimeOffset += TimeSpan.FromSeconds(1);
             }
 
-            // PostgreSQL doesn't have a real DateTimeOffset type; we map .NET DateTimeOffset to timestamptz, which represents a UTC
-            // timestamp, and so we only support offset=0.
-            // Also chop sub-microsecond precision which PostgreSQL does not support.
             item.DateTimeOffset = new DateTimeOffset(StripSubMicrosecond(item.DateTimeOffset.Ticks), TimeSpan.Zero);
         }
 
@@ -65,7 +79,7 @@ public class BasicTypesQueryMySqlFixture : BasicTypesQueryFixtureBase, ITestSqlL
         {
             if (item.DateTime.HasValue)
             {
-                item.DateTime = DateTime.SpecifyKind(new DateTime(StripSubMicrosecond(item.DateTime.Value.Ticks)), DateTimeKind.Utc);
+                item.DateTime = new DateTime(StripSubMicrosecond(item.DateTime.Value.Ticks));
             }
 
             if (item.TimeOnly.HasValue)

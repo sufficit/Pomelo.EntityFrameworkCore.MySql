@@ -534,6 +534,62 @@ FROM `TestEntityWithOwned` AS `t`
 """);
     }
 
+
+
+
+
+
+
+
+
+    public override async Task Parameter_collection_Contains_with_default_mode(ParameterTranslationMode mode)
+    {
+        await base.Parameter_collection_Contains_with_default_mode(mode);
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Constant(ParameterTranslationMode mode)
+    {
+        await base.Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Constant(mode);
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_Contains_with_default_mode_EF_Constant(ParameterTranslationMode mode)
+    {
+        await base.Parameter_collection_Contains_with_default_mode_EF_Constant(mode);
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Parameter(ParameterTranslationMode mode)
+    {
+        await base.Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Parameter(mode);
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_Contains_with_default_mode_EF_Parameter(ParameterTranslationMode mode)
+    {
+        await base.Parameter_collection_Contains_with_default_mode_EF_Parameter(mode);
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_Count_with_column_predicate_with_default_mode_EF_MultipleParameters(ParameterTranslationMode mode)
+    {
+        await base.Parameter_collection_Count_with_column_predicate_with_default_mode_EF_MultipleParameters(mode);
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_Contains_with_default_mode_EF_MultipleParameters(ParameterTranslationMode mode)
+    {
+        await base.Parameter_collection_Contains_with_default_mode_EF_MultipleParameters(mode);
+        AssertSql();
+    }
+
+    public override async Task Parameter_collection_Contains_parameter_bucketization()
+    {
+        await base.Parameter_collection_Contains_parameter_bucketization();
+        AssertSql();
+    }
+
     [ConditionalFact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
