@@ -21,13 +21,23 @@ public class NonSharedModelBulkUpdatesMySqlTest : NonSharedModelBulkUpdatesRelat
     public override async Task Delete_with_view_mapping(bool async)
     {
         await base.Delete_with_view_mapping(async);
-        AssertSql();
+        AssertSql(
+            """
+DELETE `b`
+FROM `Blogs` AS `b`
+""");
     }
 
     public override async Task Update_with_view_mapping(bool async)
     {
         await base.Update_with_view_mapping(async);
-        AssertSql();
+        AssertSql(
+            """
+@p='Updated' (Size = 4000)
+
+UPDATE `Blogs` AS `b`
+SET `b`.`Data` = @p
+""");
     }
 
     public override async Task Update_complex_type_with_view_mapping(bool async)
@@ -74,11 +84,15 @@ FROM `Owner` AS `o`
         await base.Delete_predicate_based_on_optional_navigation(async);
 
         AssertSql(
-"""
+            """
 DELETE `p`
 FROM `Posts` AS `p`
-LEFT JOIN `Blogs` AS `b` ON `p`.`BlogId` = `b`.`Id`
-WHERE `b`.`Title` LIKE 'Arthur%'
+WHERE `p`.`Id` IN (
+    SELECT `p0`.`Id`
+    FROM `Posts` AS `p0`
+    LEFT JOIN `Blogs` AS `b` ON `p0`.`BlogId` = `b`.`Id`
+    WHERE `b`.`Title` LIKE 'Arthur%'
+)
 """);
     }
 
@@ -147,10 +161,14 @@ SET `b0`.`Title` = CAST(`b0`.`Rating` AS char),
         await base.Delete_entity_with_auto_include(async);
 
         AssertSql(
-"""
+            """
 DELETE `c`
 FROM `Context30572_Principal` AS `c`
-LEFT JOIN `Context30572_Dependent` AS `c0` ON `c`.`DependentId` = `c0`.`Id`
+WHERE `c`.`Id` IN (
+    SELECT `c0`.`Id`
+    FROM `Context30572_Principal` AS `c0`
+    LEFT JOIN `Context30572_Dependent` AS `c1` ON `c0`.`DependentId` = `c1`.`Id`
+)
 """);
     }
 

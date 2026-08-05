@@ -55,10 +55,10 @@ WHERE ABS(`b`.`Double`) = 9.5
         await base.Abs_float();
 
         AssertSql(
-"""
+            """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE CAST(ABS(`b`.`Float`) AS double) = 9.5
+WHERE (CAST(ABS(`b`.`Float`) AS decimal(65,30)) + 0e0) = 9.5
 """);
     }
 
@@ -127,10 +127,10 @@ WHERE FLOOR(`b`.`Float`) = 8
         await base.Power();
 
         AssertSql(
-"""
+            """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE POWER(CAST(`b`.`Int` AS double), 2.0) = 64.0
+WHERE POWER((CAST(`b`.`Int` AS decimal(65,30)) + 0e0), 2.0) = 64.0
 """);
     }
 
@@ -229,7 +229,7 @@ WHERE ROUND(`b`.`Double`, 1) = 255.09999999999999
             """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE ROUND(CAST(`b`.`Float` AS double), 1) = 255.09999999999999
+WHERE ROUND((CAST(`b`.`Float` AS decimal(65,30)) + 0e0), 1) = 255.09999999999999
 """);
     }
 
@@ -645,10 +645,10 @@ WHERE ((`b`.`Double` >= -1.0) AND (`b`.`Double` <= 1.0)) AND (ASIN(`b`.`Double`)
         await base.Asin_float();
 
         AssertSql(
-"""
+            """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE ((`b`.`Float` >= -1) AND (`b`.`Float` <= 1)) AND (CAST(ASIN(`b`.`Float`) AS double) > -1.7976931348623157E+308)
+WHERE ((`b`.`Float` >= -1) AND (`b`.`Float` <= 1)) AND ((CAST(ASIN(`b`.`Float`) AS decimal(65,30)) + 0e0) > -1.7976931348623157E+308)
 """);
     }
 

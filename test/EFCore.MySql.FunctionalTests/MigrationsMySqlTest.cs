@@ -217,7 +217,9 @@ SELECT ROW_COUNT();",
             await base.Add_column_with_defaultValue_datetime();
 
             AssertSql(
-                @"ALTER TABLE `People` ADD `Birthday` datetime(6) NOT NULL DEFAULT '2015-04-12 17:05:00';");
+                """
+ALTER TABLE `People` ADD `Birthday` datetime NOT NULL DEFAULT '2015-04-12 17:05:00';
+""");
         }
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.DefaultExpression), nameof(ServerVersionSupport.AlternativeDefaultExpression))]
@@ -1710,14 +1712,14 @@ ALTER TABLE `People` MODIFY COLUMN `SomeColumn` longtext CHARACTER SET utf8mb4 N
             await base.Alter_column_make_required_with_index();
 
             AssertSql(
-"""
+                """
 UPDATE `People` SET `SomeColumn` = ''
 WHERE `SomeColumn` IS NULL;
 SELECT ROW_COUNT();
 """,
                 //
                 """
-ALTER TABLE `People` MODIFY COLUMN `SomeColumn` varchar(255) CHARACTER SET utf8mb4 NOT NULL;
+ALTER TABLE `People` MODIFY COLUMN `SomeColumn` varchar(95) CHARACTER SET utf8mb4 NOT NULL;
 """);
         }
 
@@ -1726,14 +1728,14 @@ ALTER TABLE `People` MODIFY COLUMN `SomeColumn` varchar(255) CHARACTER SET utf8m
             await base.Alter_column_make_required_with_composite_index();
 
             AssertSql(
-"""
+                """
 UPDATE `People` SET `FirstName` = ''
 WHERE `FirstName` IS NULL;
 SELECT ROW_COUNT();
 """,
                 //
                 """
-ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(255) CHARACTER SET utf8mb4 NOT NULL;
+ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(95) CHARACTER SET utf8mb4 NOT NULL;
 """);
         }
 
@@ -1826,8 +1828,8 @@ ALTER TABLE `People` DROP COLUMN `X`;
             await base.Rename_column();
 
             AssertSql(
-"""
-ALTER TABLE `People` RENAME COLUMN `SomeColumn` TO `SomeOtherColumn`;
+                """
+ALTER TABLE `People` CHANGE `SomeColumn` `SomeOtherColumn` longtext NULL;
 """);
         }
 
@@ -1836,8 +1838,8 @@ ALTER TABLE `People` RENAME COLUMN `SomeColumn` TO `SomeOtherColumn`;
             await base.Create_index();
 
             AssertSql(
-"""
-ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(255) CHARACTER SET utf8mb4 NULL;
+                """
+ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(95) CHARACTER SET utf8mb4 NULL;
 """,
                 //
                 """
@@ -1850,12 +1852,12 @@ CREATE INDEX `IX_People_FirstName` ON `People` (`FirstName`);
             await base.Create_index_unique();
 
             AssertSql(
-"""
-ALTER TABLE `People` MODIFY COLUMN `LastName` varchar(255) CHARACTER SET utf8mb4 NULL;
+                """
+ALTER TABLE `People` MODIFY COLUMN `LastName` varchar(95) CHARACTER SET utf8mb4 NULL;
 """,
                 //
                 """
-ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(255) CHARACTER SET utf8mb4 NULL;
+ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(95) CHARACTER SET utf8mb4 NULL;
 """,
                 //
                 """
@@ -2234,13 +2236,35 @@ ALTER TABLE `Customers` ADD `Numbers` longtext CHARACTER SET utf8mb4 NOT NULL DE
         public override async Task Multiop_drop_table_and_create_the_same_table_in_one_migration()
         {
             await base.Multiop_drop_table_and_create_the_same_table_in_one_migration();
-            AssertSql();
+            AssertSql(
+                """
+DROP TABLE `Customers`;
+""",
+                //
+                """
+CREATE TABLE `Customers` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_Customers` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""");
         }
 
         public override async Task Multiop_create_table_and_drop_it_in_one_migration()
         {
             await base.Multiop_create_table_and_drop_it_in_one_migration();
-            AssertSql();
+            AssertSql(
+                """
+CREATE TABLE `Customers` (
+    `Id` int NOT NULL AUTO_INCREMENT,
+    `Name` longtext CHARACTER SET utf8mb4 NULL,
+    CONSTRAINT `PK_Customers` PRIMARY KEY (`Id`)
+) CHARACTER SET=utf8mb4;
+""",
+                //
+                """
+DROP TABLE `Customers`;
+""");
         }
 
         public override async Task Multiop_rename_table_and_drop()

@@ -77,12 +77,12 @@ LIMIT 2
                 .Where(i => i.BestServedBefore.ToDateTime(new TimeOnly(12, 21, 42)) == matchExpireDateTime));
 
         AssertSql(
-"""
+            """
 @matchExpireDateTime='2299-12-31T12:21:42.0000000' (DbType = DateTime)
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE ADDTIME(CAST(`i`.`BestServedBefore` AS datetime(6)), TIME '12:21:42') = @matchExpireDateTime
+WHERE ADDTIME(CAST(`i`.`BestServedBefore` AS datetime), TIME '12:21:42') = @matchExpireDateTime
 LIMIT 2
 """);
     }
@@ -99,12 +99,12 @@ LIMIT 2
                 .Where(i => i.BestServedBefore.ToDateTime(new TimeOnly()) == matchExpireDateTime));
 
         AssertSql(
-"""
+            """
 @matchExpireDateTime='2299-12-31T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE CAST(`i`.`BestServedBefore` AS datetime(6)) = @matchExpireDateTime
+WHERE CAST(`i`.`BestServedBefore` AS datetime) = @matchExpireDateTime
 LIMIT 2
 """);
     }
@@ -161,9 +161,11 @@ WHERE TIMESTAMPDIFF(DAY, @todayDateOnly, `i`.`BestServedBefore`) < 30
         Assert.Single(result);
 
         AssertSql(
-            @"SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
+            """
+SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE TIMESTAMPDIFF(DAY, CURDATE(), CAST(`i`.`BestServedBefore` AS datetime(6))) < 30");
+WHERE TIMESTAMPDIFF(DAY, CURDATE(), CAST(`i`.`BestServedBefore` AS datetime)) < 30
+""");
     }
 
     private string AssertSql(string expected)

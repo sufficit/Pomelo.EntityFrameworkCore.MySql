@@ -159,8 +159,8 @@ ORDER BY (
         await base.Skip_navigation_select_many_average(async);
 
         AssertSql(
-"""
-SELECT AVG(CAST(`s`.`Key1` AS double))
+            """
+SELECT AVG((CAST(`s`.`Key1` AS decimal(65,30)) + 0e0))
 FROM `EntityTwos` AS `e`
 INNER JOIN (
     SELECT `e1`.`Key1`, `e0`.`TwoSkipSharedId`

@@ -138,7 +138,12 @@ WHERE `o`.`OrderID` < 10300
         {
             await base.Client_evaluation_of_uncorrelated_method_call(async);
 
-            AssertSql();
+            AssertSql(
+                """
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`UnitPrice` < 7.0) AND (10 < `o`.`ProductID`)
+""");
         }
 
         [ConditionalFact]
