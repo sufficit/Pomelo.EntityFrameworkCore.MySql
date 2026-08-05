@@ -3330,7 +3330,19 @@ LEFT JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
     public override async Task SelectMany_Joined_Take(bool async)
     {
         await base.SelectMany_Joined_Take(async);
-        AssertSql();
+        AssertSql(
+            """
+SELECT `c`.`ContactName`, `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM `Customers` AS `c`
+INNER JOIN (
+    SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    WHERE `o0`.`row` <= 4
+) AS `o1` ON `c`.`CustomerID` = `o1`.`CustomerID`
+""");
     }
 
     public override async Task SelectMany_Joined_DefaultIfEmpty2(bool async)
@@ -3662,7 +3674,27 @@ WHERE (
     public override async Task Select_Subquery_Single(bool async)
     {
         await base.Select_Subquery_Single(async);
-        AssertSql();
+        AssertSql(
+            """
+@p='2'
+
+SELECT `o3`.`OrderID`, `o3`.`CustomerID`, `o3`.`EmployeeID`, `o3`.`OrderDate`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`ProductID`
+    FROM `Order Details` AS `o`
+    ORDER BY `o`.`ProductID`, `o`.`OrderID`
+    LIMIT @p
+) AS `o1`
+LEFT JOIN (
+    SELECT `o2`.`OrderID`, `o2`.`CustomerID`, `o2`.`EmployeeID`, `o2`.`OrderDate`
+    FROM (
+        SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o0`.`OrderID` ORDER BY `o0`.`OrderID`) AS `row`
+        FROM `Orders` AS `o0`
+    ) AS `o2`
+    WHERE `o2`.`row` <= 1
+) AS `o3` ON `o1`.`OrderID` = `o3`.`OrderID`
+ORDER BY `o1`.`ProductID`, `o1`.`OrderID`
+""");
     }
 
     public override async Task Select_Where_Subquery_Deep_Single(bool async)
@@ -4161,7 +4193,7 @@ WHERE `o`.`OrderDate` IS NOT NULL
             """
 @millisecondsPerDay='86400000'
 
-SELECT DATE_ADD(DATE_ADD(`o`.`OrderDate`, INTERVAL CAST((CAST(CAST((EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) AS signed) / @millisecondsPerDay AS decimal(65,30)) + 0e0) AS signed) day), INTERVAL 1000 * CAST((CAST(CAST((EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) AS signed) % @millisecondsPerDay AS decimal(65,30)) + 0e0) AS signed) microsecond) AS `OrderDate`
+SELECT DATE_ADD(DATE_ADD(`o`.`OrderDate`, INTERVAL CAST(CAST(CAST((EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) AS signed) / @millisecondsPerDay AS double) AS signed) day), INTERVAL 1000 * CAST(CAST(CAST((EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) AS signed) % @millisecondsPerDay AS double) AS signed) microsecond) AS `OrderDate`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderDate` IS NOT NULL
 """);
@@ -4172,7 +4204,7 @@ WHERE `o`.`OrderDate` IS NOT NULL
         await base.Add_minutes_on_constant_value(async);
         AssertSql(
             """
-SELECT DATE_ADD(TIMESTAMP '1900-01-01 00:00:00', INTERVAL CAST((CAST(`o`.`OrderID` % 25 AS decimal(65,30)) + 0e0) AS signed) minute) AS `Test`
+SELECT DATE_ADD(TIMESTAMP '1900-01-01 00:00:00', INTERVAL CAST(CAST(`o`.`OrderID` % 25 AS double) AS signed) minute) AS `Test`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` < 10500
 ORDER BY `o`.`OrderID`
@@ -4843,7 +4875,7 @@ WHERE (
             """
 @p='10'
 
-SELECT AVG((CAST(`o0`.`OrderID` AS decimal(65,30)) + 0e0))
+SELECT AVG(CAST(`o0`.`OrderID` AS double))
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
@@ -4977,7 +5009,7 @@ FROM (
             """
 @p='10'
 
-SELECT AVG((CAST(`o0`.`OrderID` AS decimal(65,30)) + 0e0))
+SELECT AVG(CAST(`o0`.`OrderID` AS double))
 FROM (
     SELECT `o`.`OrderID`
     FROM `Orders` AS `o`
@@ -5109,7 +5141,7 @@ FROM (
         await base.Select_distinct_average(async);
         AssertSql(
             """
-SELECT AVG((CAST(`o0`.`OrderID` AS decimal(65,30)) + 0e0))
+SELECT AVG(CAST(`o0`.`OrderID` AS double))
 FROM (
     SELECT DISTINCT `o`.`OrderID`
     FROM `Orders` AS `o`
@@ -5644,7 +5676,21 @@ LIMIT @p0 OFFSET @p
     public override async Task AsQueryable_in_query_server_evals(bool async)
     {
         await base.AsQueryable_in_query_server_evals(async);
-        AssertSql();
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `o1`.`OrderDate`, `o1`.`OrderID`
+FROM `Customers` AS `c`
+LEFT JOIN (
+    SELECT `o0`.`OrderDate`, `o0`.`OrderID`, `o0`.`CustomerID`
+    FROM (
+        SELECT `o`.`OrderDate`, `o`.`OrderID`, `o`.`CustomerID`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+        WHERE EXTRACT(year FROM `o`.`OrderDate`) = 1998
+    ) AS `o0`
+    WHERE `o0`.`row` <= 1
+) AS `o1` ON `c`.`CustomerID` = `o1`.`CustomerID`
+ORDER BY `c`.`CustomerID`, `o1`.`CustomerID`, `o1`.`OrderID`
+""");
     }
 
     public override async Task Subquery_DefaultIfEmpty_Any(bool async)
@@ -5790,19 +5836,77 @@ ORDER BY `o1`.`OrderID`, `o0`.`OrderID`
     public override async Task Anonymous_projection_skip_empty_collection_FirstOrDefault(bool async)
     {
         await base.Anonymous_projection_skip_empty_collection_FirstOrDefault(async);
-        AssertSql();
+        AssertSql(
+            """
+@p='0'
+
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM (
+    SELECT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` = 'FISSA'
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `c0`
+LEFT JOIN (
+    SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    WHERE `o0`.`row` <= 1
+) AS `o1` ON `c0`.`CustomerID` = `o1`.`CustomerID`
+""");
     }
 
     public override async Task Anonymous_projection_take_empty_collection_FirstOrDefault(bool async)
     {
         await base.Anonymous_projection_take_empty_collection_FirstOrDefault(async);
-        AssertSql();
+        AssertSql(
+            """
+@p='1'
+
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM (
+    SELECT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` = 'FISSA'
+    LIMIT @p
+) AS `c0`
+LEFT JOIN (
+    SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    WHERE `o0`.`row` <= 1
+) AS `o1` ON `c0`.`CustomerID` = `o1`.`CustomerID`
+""");
     }
 
     public override async Task Anonymous_projection_skip_take_empty_collection_FirstOrDefault(bool async)
     {
         await base.Anonymous_projection_skip_take_empty_collection_FirstOrDefault(async);
-        AssertSql();
+        AssertSql(
+            """
+@p0='1'
+@p='0'
+
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM (
+    SELECT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` = 'FISSA'
+    LIMIT @p0 OFFSET @p
+) AS `c0`
+LEFT JOIN (
+    SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    WHERE `o0`.`row` <= 1
+) AS `o1` ON `c0`.`CustomerID` = `o1`.`CustomerID`
+""");
     }
 
     public override async Task Checked_context_with_arithmetic_does_not_fail(bool async)
@@ -5900,7 +6004,19 @@ WHERE FALSE
     public override async Task Single_non_scalar_projection_after_skip_uses_join(bool async)
     {
         await base.Single_non_scalar_projection_after_skip_uses_join(async);
-        AssertSql();
+        AssertSql(
+            """
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM `Customers` AS `c`
+LEFT JOIN (
+    SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderDate`, `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    WHERE (2 < `o0`.`row`) AND (`o0`.`row` <= 3)
+) AS `o1` ON `c`.`CustomerID` = `o1`.`CustomerID`
+""");
     }
 
     public override async Task Select_distinct_Select_with_client_bindings(bool async)

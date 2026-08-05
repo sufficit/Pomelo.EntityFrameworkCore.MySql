@@ -268,7 +268,7 @@ SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`
 FROM `PrimitiveCollectionsEntity` AS `p`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT @ids1 AS `Value` UNION ALL SELECT @ids2) AS `i`
+    FROM (SELECT @ids1 AS `Value` UNION ALL VALUES (@ids2)) AS `i`
     WHERE `i`.`Value` > `p`.`Id`) = 1
 """);
     }
@@ -1282,7 +1282,7 @@ WHERE (
     SELECT COUNT(*)
     FROM (
         SELECT `i`.`Value` AS `Value0`
-        FROM (SELECT 0 AS `_ord`, @ints1 AS `Value` UNION ALL SELECT 1, @ints2) AS `i`
+        FROM (SELECT 0 AS `_ord`, @ints1 AS `Value` UNION ALL VALUES (1, @ints2)) AS `i`
         ORDER BY `i`.`_ord`
         LIMIT 18446744073709551610 OFFSET 1
     ) AS `i0`
@@ -1751,7 +1751,7 @@ SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`
 FROM `PrimitiveCollectionsEntity` AS `p`
 WHERE EXISTS (
     SELECT 1
-    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL SELECT 999 UNION ALL SELECT 1000) AS `i`
+    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL VALUES (999), (1000)) AS `i`
     WHERE `i`.`Value` > 0)
 """);
     }
@@ -1768,7 +1768,7 @@ SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`
 FROM `PrimitiveCollectionsEntity` AS `p`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL SELECT 999 UNION ALL SELECT 1000) AS `i`
+    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL VALUES (999), (1000)) AS `i`
     WHERE `i`.`Value` > `p`.`Id`) = 2
 """);
     }
@@ -2512,7 +2512,7 @@ SELECT `p`.`Id`, `p`.`Bool`, `p`.`Bools`, `p`.`DateTime`, `p`.`DateTimes`, `p`.`
 FROM `PrimitiveCollectionsEntity` AS `p`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT CAST(0 AS signed) AS `Value` UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3) AS `v`
+    FROM (SELECT CAST(0 AS signed) AS `Value` UNION ALL VALUES (1), (2), (3)) AS `v`
     WHERE `v`.`Value` = `p`.`Int`) > 0
 """);
     }

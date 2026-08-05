@@ -500,7 +500,7 @@ SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT @ids1 AS `Value` UNION ALL SELECT @ids2) AS `i`
+    FROM (SELECT @ids1 AS `Value` UNION ALL VALUES (@ids2)) AS `i`
     WHERE `i`.`Value` > `t`.`Id`) = 1
 """);
                 break;
@@ -511,7 +511,7 @@ SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL SELECT 999) AS `i`
+    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL VALUES (999)) AS `i`
     WHERE `i`.`Value` > `t`.`Id`) = 1
 """);
                 break;
@@ -547,9 +547,12 @@ FROM `TestEntityWithOwned` AS `t`
         await base.Parameter_collection_Contains_with_default_mode(mode);
         AssertSql(
             """
+@ints1='2'
+@ints2='999'
+
 SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
-WHERE `t`.`Id` IN (2, 999)
+WHERE `t`.`Id` IN (@ints1, @ints2)
 """);
     }
 
@@ -562,7 +565,7 @@ SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL SELECT 999) AS `i`
+    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL VALUES (999)) AS `i`
     WHERE `i`.`Value` > `t`.`Id`) = 1
 """);
     }
@@ -602,7 +605,7 @@ SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT @ids1 AS `Value` UNION ALL SELECT @ids2) AS `i`
+    FROM (SELECT @ids1 AS `Value` UNION ALL VALUES (@ids2)) AS `i`
     WHERE `i`.`Value` > `t`.`Id`) = 1
 """);
     }

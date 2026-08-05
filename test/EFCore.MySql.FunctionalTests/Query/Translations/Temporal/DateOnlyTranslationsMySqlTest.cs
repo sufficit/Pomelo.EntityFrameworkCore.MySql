@@ -182,7 +182,7 @@ WHERE DATE(`b`.`DateTime`) IN (@dateOnly, DATE '1998-05-04')
             """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE ADDTIME(CAST(`b`.`DateOnly` AS datetime), TIME '21:05:19') = TIMESTAMP '2020-01-01 21:05:19'
+WHERE ADDTIME(CAST(`b`.`DateOnly` AS datetime(6)), TIME '21:05:19.9405') = TIMESTAMP '2020-01-01 21:05:19.9405'
 """);
     }
 
@@ -194,7 +194,7 @@ WHERE ADDTIME(CAST(`b`.`DateOnly` AS datetime), TIME '21:05:19') = TIMESTAMP '20
             """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE ADDTIME(CAST(`b`.`DateOnly` AS datetime), `b`.`TimeOnly`) = TIMESTAMP '2020-01-01 15:30:10'
+WHERE ADDTIME(CAST(`b`.`DateOnly` AS datetime(6)), `b`.`TimeOnly`) = TIMESTAMP '2020-01-01 15:30:10'
 """);
     }
 
@@ -206,7 +206,7 @@ WHERE ADDTIME(CAST(`b`.`DateOnly` AS datetime), `b`.`TimeOnly`) = TIMESTAMP '202
             """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE ADDTIME(CAST(DATE '1990-11-10' AS datetime), `b`.`TimeOnly`) = TIMESTAMP '1990-11-10 15:30:10'
+WHERE ADDTIME(CAST(DATE '1990-11-10' AS datetime(6)), `b`.`TimeOnly`) = TIMESTAMP '1990-11-10 15:30:10'
 """);
     }
 
@@ -218,7 +218,7 @@ WHERE ADDTIME(CAST(DATE '1990-11-10' AS datetime), `b`.`TimeOnly`) = TIMESTAMP '
             """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE ADDTIME(CAST(DATE_ADD(`b`.`DateOnly`, INTERVAL CAST(1 AS signed) year) AS datetime), `b`.`TimeOnly`) = TIMESTAMP '2021-01-01 15:30:10'
+WHERE ADDTIME(CAST(DATE_ADD(`b`.`DateOnly`, INTERVAL CAST(1 AS signed) year) AS datetime(6)), `b`.`TimeOnly`) = TIMESTAMP '2021-01-01 15:30:10'
 """);
     }
 
@@ -230,7 +230,7 @@ WHERE ADDTIME(CAST(DATE_ADD(`b`.`DateOnly`, INTERVAL CAST(1 AS signed) year) AS 
             """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE ADDTIME(CAST(`b`.`DateOnly` AS datetime), DATE_ADD(`b`.`TimeOnly`, INTERVAL CAST(1.0 AS signed) hour)) = TIMESTAMP '2020-01-01 16:30:10'
+WHERE ADDTIME(CAST(`b`.`DateOnly` AS datetime(6)), DATE_ADD(`b`.`TimeOnly`, INTERVAL CAST(1.0 AS signed) hour)) = TIMESTAMP '2020-01-01 16:30:10'
 """);
     }
 

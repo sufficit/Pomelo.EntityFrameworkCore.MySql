@@ -188,12 +188,12 @@ WHERE `b`.`TimeSpan` < `b`.`TimeOnly`
         await base.FromTimeSpan_compared_to_parameter();
 
         AssertSql(
-"""
+            """
 @time='01:02' (DbType = Time)
 
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE CAST(`b`.`TimeSpan` AS time) = @time
+WHERE `b`.`TimeSpan` = @time
 """);
     }
 
@@ -205,10 +205,10 @@ WHERE CAST(`b`.`TimeSpan` AS time) = @time
             assertOrder: true);
 
         AssertSql(
-"""
+            """
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-ORDER BY CAST(`b`.`TimeSpan` AS time), `b`.`Id`
+ORDER BY `b`.`TimeSpan`, `b`.`Id`
 """);
     }
 

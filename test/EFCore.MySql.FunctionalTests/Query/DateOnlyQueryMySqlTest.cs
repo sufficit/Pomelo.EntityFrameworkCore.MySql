@@ -82,7 +82,7 @@ LIMIT 2
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE ADDTIME(CAST(`i`.`BestServedBefore` AS datetime), TIME '12:21:42') = @matchExpireDateTime
+WHERE ADDTIME(CAST(`i`.`BestServedBefore` AS datetime(6)), TIME '12:21:42') = @matchExpireDateTime
 LIMIT 2
 """);
     }
@@ -104,7 +104,7 @@ LIMIT 2
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE CAST(`i`.`BestServedBefore` AS datetime) = @matchExpireDateTime
+WHERE CAST(`i`.`BestServedBefore` AS datetime(6)) = @matchExpireDateTime
 LIMIT 2
 """);
     }
@@ -164,7 +164,7 @@ WHERE TIMESTAMPDIFF(DAY, @todayDateOnly, `i`.`BestServedBefore`) < 30
             """
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE TIMESTAMPDIFF(DAY, CURDATE(), CAST(`i`.`BestServedBefore` AS datetime)) < 30
+WHERE TIMESTAMPDIFF(DAY, CURDATE(), CAST(`i`.`BestServedBefore` AS datetime(6))) < 30
 """);
     }
 

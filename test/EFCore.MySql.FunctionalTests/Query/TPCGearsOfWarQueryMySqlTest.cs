@@ -4143,7 +4143,7 @@ WHERE (`t`.`SquadId` < 2) AND EXISTS (
         {
         AssertSql(
             """
-@cities1='Ephyra' (Size = 95)
+@cities1='Ephyra' (Size = 255)
 
 SELECT `u`.`Nickname`, `u`.`SquadId`, `u`.`AssignedCityName`, `u`.`CityOfBirthName`, `u`.`FullName`, `u`.`HasSoulPatch`, `u`.`LeaderNickname`, `u`.`LeaderSquadId`, `u`.`Rank`, `u`.`Discriminator`
 FROM (
@@ -7676,7 +7676,7 @@ ORDER BY `u`.`Nickname`, `m`.`Id`
 
         AssertSql(
             """
-SELECT AVG((CAST(`u`.`SquadId` AS decimal(65,30)) + 0e0))
+SELECT AVG(CAST(`u`.`SquadId` AS double))
 FROM (
     SELECT `g`.`SquadId`, `g`.`Rank`
     FROM `Gears` AS `g`
@@ -8725,7 +8725,7 @@ FROM `LocustCommanders` AS `l0`
 
         AssertSql(
             """
-SELECT `m`.`Timeline` > UTC_TIMESTAMP()
+SELECT `m`.`Timeline` > UTC_TIMESTAMP(6)
 FROM `Missions` AS `m`
 """);
     }
@@ -8857,7 +8857,7 @@ WHERE EXISTS (
 
         AssertSql(
             """
-@prm_Inner_Nickname='Marcus' (Size = 95)
+@prm_Inner_Nickname='Marcus' (Size = 255)
 
 SELECT `u0`.`Nickname`, `u0`.`SquadId`, `u0`.`AssignedCityName`, `u0`.`CityOfBirthName`, `u0`.`FullName`, `u0`.`HasSoulPatch`, `u0`.`LeaderNickname`, `u0`.`LeaderSquadId`, `u0`.`Rank`, `u0`.`Discriminator`
 FROM (
@@ -12307,7 +12307,7 @@ WHERE (
         await base.Subquery_inside_Take_argument(async);
 
         AssertSql(
-"""
+            """
 @numbers1='0'
 @numbers2='1'
 @numbers3='2'
@@ -12328,7 +12328,7 @@ LEFT JOIN (
     ) AS `w0`
     WHERE `w0`.`row` <= COALESCE((
         SELECT `n`.`Value`
-        FROM (SELECT @numbers1 AS `Value` UNION ALL VALUES ROW(@numbers2), ROW(@numbers3)) AS `n`
+        FROM (SELECT @numbers1 AS `Value` UNION ALL VALUES (@numbers2), (@numbers3)) AS `n`
         ORDER BY `n`.`Value`
         LIMIT 1 OFFSET 1), 0)
 ) AS `w1` ON `u`.`FullName` = `w1`.`OwnerFullName`

@@ -160,7 +160,7 @@ ORDER BY (
 
         AssertSql(
             """
-SELECT AVG((CAST(`s`.`Key1` AS decimal(65,30)) + 0e0))
+SELECT AVG(CAST(`s`.`Key1` AS double))
 FROM `EntityTwos` AS `e`
 INNER JOIN (
     SELECT `e1`.`Key1`, `e0`.`TwoSkipSharedId`

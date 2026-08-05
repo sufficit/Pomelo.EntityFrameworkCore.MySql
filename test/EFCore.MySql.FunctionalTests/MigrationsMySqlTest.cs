@@ -218,7 +218,7 @@ SELECT ROW_COUNT();",
 
             AssertSql(
                 """
-ALTER TABLE `People` ADD `Birthday` datetime NOT NULL DEFAULT '2015-04-12 17:05:00';
+ALTER TABLE `People` ADD `Birthday` datetime(6) NOT NULL DEFAULT '2015-04-12 17:05:00';
 """);
         }
 
@@ -1719,7 +1719,7 @@ SELECT ROW_COUNT();
 """,
                 //
                 """
-ALTER TABLE `People` MODIFY COLUMN `SomeColumn` varchar(95) CHARACTER SET utf8mb4 NOT NULL;
+ALTER TABLE `People` MODIFY COLUMN `SomeColumn` varchar(255) CHARACTER SET utf8mb4 NOT NULL;
 """);
         }
 
@@ -1735,7 +1735,7 @@ SELECT ROW_COUNT();
 """,
                 //
                 """
-ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(95) CHARACTER SET utf8mb4 NOT NULL;
+ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(255) CHARACTER SET utf8mb4 NOT NULL;
 """);
         }
 
@@ -1829,7 +1829,7 @@ ALTER TABLE `People` DROP COLUMN `X`;
 
             AssertSql(
                 """
-ALTER TABLE `People` CHANGE `SomeColumn` `SomeOtherColumn` longtext NULL;
+ALTER TABLE `People` RENAME COLUMN `SomeColumn` TO `SomeOtherColumn`;
 """);
         }
 
@@ -1839,7 +1839,7 @@ ALTER TABLE `People` CHANGE `SomeColumn` `SomeOtherColumn` longtext NULL;
 
             AssertSql(
                 """
-ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(95) CHARACTER SET utf8mb4 NULL;
+ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(255) CHARACTER SET utf8mb4 NULL;
 """,
                 //
                 """
@@ -1853,11 +1853,11 @@ CREATE INDEX `IX_People_FirstName` ON `People` (`FirstName`);
 
             AssertSql(
                 """
-ALTER TABLE `People` MODIFY COLUMN `LastName` varchar(95) CHARACTER SET utf8mb4 NULL;
+ALTER TABLE `People` MODIFY COLUMN `LastName` varchar(255) CHARACTER SET utf8mb4 NULL;
 """,
                 //
                 """
-ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(95) CHARACTER SET utf8mb4 NULL;
+ALTER TABLE `People` MODIFY COLUMN `FirstName` varchar(255) CHARACTER SET utf8mb4 NULL;
 """,
                 //
                 """

@@ -22,12 +22,12 @@ public class DateTimeTranslationsMySqlTest : DateTimeTranslationsTestBase<BasicT
         await base.Now();
 
         AssertSql(
-"""
+            """
 @myDatetime='2015-04-10T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE CURRENT_TIMESTAMP() <> @myDatetime
+WHERE CURRENT_TIMESTAMP(6) <> @myDatetime
 """);
     }
 
@@ -39,12 +39,12 @@ WHERE CURRENT_TIMESTAMP() <> @myDatetime
             ss => ss.Set<BasicTypesEntity>().Where(c => DateTime.UtcNow != myDatetime));
 
         AssertSql(
-"""
+            """
 @myDatetime='2015-04-10T00:00:00.0000000Z' (DbType = DateTime)
 
 SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
 FROM `BasicTypesEntities` AS `b`
-WHERE UTC_TIMESTAMP() <> @myDatetime
+WHERE UTC_TIMESTAMP(6) <> @myDatetime
 """);
     }
 

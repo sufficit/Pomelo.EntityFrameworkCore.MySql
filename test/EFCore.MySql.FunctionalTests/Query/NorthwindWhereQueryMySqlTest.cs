@@ -1987,7 +1987,7 @@ WHERE @p
             """
 SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
 FROM `Products` AS `p`
-WHERE (CAST(`p`.`UnitPrice` AS decimal(65,30)) + 0e0) > 100.0
+WHERE CAST(`p`.`UnitPrice` AS double) > 100.0
 """);
     }
 
