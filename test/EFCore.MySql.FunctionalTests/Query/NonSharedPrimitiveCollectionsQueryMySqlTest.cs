@@ -545,12 +545,28 @@ FROM `TestEntityWithOwned` AS `t`
     public override async Task Parameter_collection_Contains_with_default_mode(ParameterTranslationMode mode)
     {
         await base.Parameter_collection_Contains_with_default_mode(mode);
-        AssertSql(
-            """
+
+        if (mode == ParameterTranslationMode.MultipleParameters)
+        {
+            AssertSql(
+                """
+@ints1='2'
+@ints2='999'
+
+SELECT `t`.`Id`
+FROM `TestEntity` AS `t`
+WHERE `t`.`Id` IN (@ints1, @ints2)
+""");
+        }
+        else
+        {
+            AssertSql(
+                """
 SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
 WHERE `t`.`Id` IN (2, 999)
 """);
+        }
     }
 
     public override async Task Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Constant(ParameterTranslationMode mode)
