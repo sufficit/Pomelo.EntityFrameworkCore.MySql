@@ -91,7 +91,7 @@ LIMIT 2
 
         AssertSql(
 """
-SELECT 5 / 2
+SELECT (5) DIV (2)
 FROM `Dummy` AS `d`
 LIMIT 2
 """);
@@ -129,8 +129,8 @@ LIMIT 2
 
         AssertSql(
 """
-SELECT CAST(5 / 2 AS numeric)
-FROM "Dummy" AS d
+SELECT CAST((5) DIV (2) AS decimal(65,30))
+FROM `Dummy` AS `d`
 LIMIT 2
 """);
     }
@@ -148,7 +148,7 @@ LIMIT 2
 
         AssertSql(
 """
-SELECT `d`.`IntLeftOperand` / `d`.`IntRightOperand`
+SELECT (`d`.`IntLeftOperand`) DIV (`d`.`IntRightOperand`)
 FROM `Dummy` AS `d`
 LIMIT 2
 """);
@@ -186,8 +186,8 @@ LIMIT 2
 
         AssertSql(
 """
-SELECT CAST(d."IntLeftOperand" / d."IntRightOperand" AS numeric)
-FROM "Dummy" AS d
+SELECT CAST((`d`.`IntLeftOperand`) DIV (`d`.`IntRightOperand`) AS decimal(65,30))
+FROM `Dummy` AS `d`
 LIMIT 2
 """);
     }
@@ -226,8 +226,8 @@ LIMIT 2
 
         AssertSql(
 """
-SELECT (5 / 2) * 2
-FROM "Dummy" AS d
+SELECT (5) DIV (2) * 2
+FROM `Dummy` AS `d`
 LIMIT 2
 """);
     }
@@ -306,8 +306,8 @@ LIMIT 2
 
         AssertSql(
 """
-SELECT CAST((5 / 2) * 2 AS numeric)
-FROM "Dummy" AS d
+SELECT CAST((5) DIV (2) * 2 AS decimal(65,30))
+FROM `Dummy` AS `d`
 LIMIT 2
 """);
     }
@@ -326,8 +326,8 @@ LIMIT 2
 
         AssertSql(
 """
-SELECT (d."IntLeftOperand" / d."IntRightOperand") * d."IntRightOperand"
-FROM "Dummy" AS d
+SELECT (`d`.`IntLeftOperand`) DIV (`d`.`IntRightOperand`) * `d`.`IntRightOperand`
+FROM `Dummy` AS `d`
 LIMIT 2
 """);
     }
@@ -366,8 +366,8 @@ LIMIT 2
 
         AssertSql(
 """
-SELECT CAST((d."IntLeftOperand" / d."IntRightOperand") * d."IntRightOperand" AS numeric)
-FROM "Dummy" AS d
+SELECT CAST((`d`.`IntLeftOperand`) DIV (`d`.`IntRightOperand`) * `d`.`IntRightOperand` AS decimal(65,30))
+FROM `Dummy` AS `d`
 LIMIT 2
 """);
     }
