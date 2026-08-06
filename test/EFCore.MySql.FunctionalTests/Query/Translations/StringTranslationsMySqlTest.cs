@@ -137,9 +137,18 @@ WHERE (LOCATE('eattl', `b`.`String`) - 1) <> -1
 """);
     }
 
-    // TODO: #3547
-    public override Task IndexOf_Char()
-        => Assert.ThrowsAsync<InvalidCastException>(() => base.IndexOf_Char());
+    // IndexOf(char) is now translated via LOCATE in MySQL.
+    public override async Task IndexOf_Char()
+    {
+        await base.IndexOf_Char();
+
+        AssertSql(
+"""
+SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
+FROM `BasicTypesEntities` AS `b`
+WHERE (LOCATE('e', `b`.`String`) - 1) <> -1
+""");
+    }
 
     public override async Task IndexOf_with_empty_string()
     {
@@ -173,29 +182,29 @@ WHERE (LOCATE(@pattern, `b`.`String`) - 1) = 1
 
         AssertSql(
             """
-@pattern='e' (DbType = String)
+@pattern='e' (Nullable = false) (Size = 1)
 
-SELECT b."Id", b."Bool", b."Byte", b."ByteArray", b."DateOnly", b."DateTime", b."DateTimeOffset", b."Decimal", b."Double", b."Enum", b."FlagsEnum", b."Float", b."Guid", b."Int", b."Long", b."Short", b."String", b."TimeOnly", b."TimeSpan"
-FROM "BasicTypesEntities" AS b
-WHERE strpos(b."String", @pattern) - 1 = 1
+SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
+FROM `BasicTypesEntities` AS `b`
+WHERE (LOCATE(@pattern, `b`.`String`) - 1) = 1
 """);
     }
 
-    // PostgreSQL does not have strpos with starting position
+    // MySQL supports LOCATE with starting position natively.
     public override Task IndexOf_with_constant_starting_position()
-        => AssertTranslationFailed(() => base.IndexOf_with_constant_starting_position());
+        => base.IndexOf_with_constant_starting_position();
 
-    // PostgreSQL does not have strpos with starting position
+    // MySQL supports LOCATE with starting position natively.
     public override Task IndexOf_with_constant_starting_position_char()
-        => AssertTranslationFailed(() => base.IndexOf_with_constant_starting_position_char());
+        => base.IndexOf_with_constant_starting_position_char();
 
-    // PostgreSQL does not have strpos with starting position
+    // MySQL supports LOCATE with starting position natively.
     public override Task IndexOf_with_parameter_starting_position()
-        => AssertTranslationFailed(() => base.IndexOf_with_parameter_starting_position());
+        => base.IndexOf_with_parameter_starting_position();
 
-    // PostgreSQL does not have strpos with starting position
+    // MySQL supports LOCATE with starting position natively.
     public override Task IndexOf_with_parameter_starting_position_char()
-        => AssertTranslationFailed(() => base.IndexOf_with_parameter_starting_position_char());
+        => base.IndexOf_with_parameter_starting_position_char();
 
     public override async Task IndexOf_after_ToString()
     {
@@ -694,17 +703,8 @@ WHERE TRIM(LEADING 'S' FROM `b`.`String`) = 'eattle'
 """);
     }
 
-    public override async Task TrimStart_with_char_array_argument()
-    {
-        await base.TrimStart_with_char_array_argument();
-
-        AssertSql(
-            """
-SELECT b."Id", b."Bool", b."Byte", b."ByteArray", b."DateOnly", b."DateTime", b."DateTimeOffset", b."Decimal", b."Double", b."Enum", b."FlagsEnum", b."Float", b."Guid", b."Int", b."Long", b."Short", b."String", b."TimeOnly", b."TimeSpan"
-FROM "BasicTypesEntities" AS b
-WHERE ltrim(b."String", 'Se') = 'attle'
-""");
-    }
+    public override Task TrimStart_with_char_array_argument()
+        => AssertTranslationFailed(() => base.TrimStart_with_char_array_argument());
 
     #endregion TrimStart
 
@@ -734,17 +734,8 @@ WHERE TRIM(TRAILING 'e' FROM `b`.`String`) = 'Seattl'
 """);
     }
 
-    public override async Task TrimEnd_with_char_array_argument()
-    {
-        await base.TrimEnd_with_char_array_argument();
-
-        AssertSql(
-            """
-SELECT b."Id", b."Bool", b."Byte", b."ByteArray", b."DateOnly", b."DateTime", b."DateTimeOffset", b."Decimal", b."Double", b."Enum", b."FlagsEnum", b."Float", b."Guid", b."Int", b."Long", b."Short", b."String", b."TimeOnly", b."TimeSpan"
-FROM "BasicTypesEntities" AS b
-WHERE rtrim(b."String", 'le') = 'Seatt'
-""");
-    }
+    public override Task TrimEnd_with_char_array_argument()
+        => AssertTranslationFailed(() => base.TrimEnd_with_char_array_argument());
 
     #endregion TrimEnd
 
@@ -774,17 +765,8 @@ WHERE TRIM('S' FROM `b`.`String`) = 'eattle'
 """);
     }
 
-    public override async Task Trim_with_char_array_argument_in_predicate()
-    {
-        await base.Trim_with_char_array_argument_in_predicate();
-
-        AssertSql(
-            """
-SELECT b."Id", b."Bool", b."Byte", b."ByteArray", b."DateOnly", b."DateTime", b."DateTimeOffset", b."Decimal", b."Double", b."Enum", b."FlagsEnum", b."Float", b."Guid", b."Int", b."Long", b."Short", b."String", b."TimeOnly", b."TimeSpan"
-FROM "BasicTypesEntities" AS b
-WHERE btrim(b."String", 'Se') = 'attl'
-""");
-    }
+    public override Task Trim_with_char_array_argument_in_predicate()
+        => AssertTranslationFailed(() => base.Trim_with_char_array_argument_in_predicate());
 
     #endregion Trim
 
