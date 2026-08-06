@@ -4206,7 +4206,7 @@ WHERE `o`.`OrderDate` IS NOT NULL
             """
 @millisecondsPerDay='86400000'
 
-SELECT DATE_ADD(DATE_ADD(`o`.`OrderDate`, INTERVAL CAST(CAST(CAST((EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) AS signed) / @millisecondsPerDay AS double) AS signed) day), INTERVAL 1000 * CAST(CAST(CAST((EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) AS signed) % @millisecondsPerDay AS double) AS signed) microsecond) AS `OrderDate`
+SELECT DATE_ADD(DATE_ADD(`o`.`OrderDate`, INTERVAL CAST(CAST((CAST((EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) AS signed)) DIV (@millisecondsPerDay) AS double) AS signed) day), INTERVAL 1000 * CAST(CAST(CAST((EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) AS signed) % @millisecondsPerDay AS double) AS signed) microsecond) AS `OrderDate`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderDate` IS NOT NULL
 """);
