@@ -3141,10 +3141,9 @@ FROM (
 """);
     }
 
-    // Where_simple_closure is not overridable in the EF Core 10 hierarchy.
-    // Declared so AssertAllMethodsOverridden recognizes it as handled.
-    public void Where_simple_closure()
+    public override async Task<string> Where_simple_closure(bool async)
     {
+        return await base.Where_simple_closure(async);
     }
 
     [ConditionalFact]
