@@ -94,13 +94,11 @@ WHERE (
 
     public override async Task Delete_GroupBy_Where_Select_First_3(bool async)
     {
-        // Not supported by MySQL:
-        //     Error Code: 1093. You can't specify target table 'c' for update in FROM clause
-        await Assert.ThrowsAsync<MySqlException>(
-            () => base.Delete_GroupBy_Where_Select_First_3(async));
+        // MySQL 8+ supports target table in FROM clause for DELETE.
+        await base.Delete_GroupBy_Where_Select_First_3(async);
 
         AssertSql(
-"""
+            """
 DELETE `a`
 FROM `Animals` AS `a`
 WHERE `a`.`Id` IN (
