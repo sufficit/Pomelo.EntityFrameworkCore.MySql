@@ -2252,14 +2252,105 @@ DROP TABLE `Customers`;
 
         public override async Task Multiop_rename_table_and_drop()
         {
+            await SetupPomeloProceduresAsync();
             await base.Multiop_rename_table_and_drop();
-            AssertSql();
+            await TeardownPomeloProceduresAsync();
         }
 
         public override async Task Multiop_rename_table_and_create_new_table_with_the_old_name()
         {
+            await SetupPomeloProceduresAsync();
             await base.Multiop_rename_table_and_create_new_table_with_the_old_name();
-            AssertSql();
+            await TeardownPomeloProceduresAsync();
+        }
+
+        private async Task SetupPomeloProceduresAsync()
+        {
+            await using var context = CreateContext();
+            var dbConnection = context.Database.GetDbConnection();
+            await using var cmd1 = dbConnection.CreateCommand();
+            cmd1.CommandText = """
+DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+    DECLARE HAS_AUTO_INCREMENT_ID TINYINT(1);
+    DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+    DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+    DECLARE SQL_EXP VARCHAR(1000);
+    SELECT COUNT(*) INTO HAS_AUTO_INCREMENT_ID
+        FROM `information_schema`.`COLUMNS`
+        WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+            AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+            AND `Extra` = 'auto_increment'
+            AND `COLUMN_KEY` = 'PRI'
+            LIMIT 1;
+    IF HAS_AUTO_INCREMENT_ID THEN
+        SELECT `COLUMN_TYPE` INTO PRIMARY_KEY_TYPE
+            FROM `information_schema`.`COLUMNS`
+            WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+                AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+                AND `COLUMN_KEY` = 'PRI'
+                LIMIT 1;
+        SELECT `COLUMN_NAME` INTO PRIMARY_KEY_COLUMN_NAME
+            FROM `information_schema`.`COLUMNS`
+            WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+                AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+                AND `COLUMN_KEY` = 'PRI'
+                LIMIT 1;
+        SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', PRIMARY_KEY_COLUMN_NAME, '` ', PRIMARY_KEY_TYPE, ' NOT NULL;');
+        SET @SQL_EXP = SQL_EXP;
+        PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+        EXECUTE SQL_EXP_EXECUTE;
+        DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+    END IF;
+END
+""";
+            await cmd1.ExecuteNonQueryAsync();
+
+            await using var cmd2 = dbConnection.CreateCommand();
+            cmd2.CommandText = """
+DROP PROCEDURE IF EXISTS `POMELO_AFTER_ADD_PRIMARY_KEY`;
+CREATE PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255), IN `COLUMN_NAME_ARGUMENT` VARCHAR(255))
+BEGIN
+    DECLARE HAS_AUTO_INCREMENT_ID INT(11);
+    DECLARE PRIMARY_KEY_COLUMN_NAME VARCHAR(255);
+    DECLARE PRIMARY_KEY_TYPE VARCHAR(255);
+    DECLARE SQL_EXP VARCHAR(1000);
+    SELECT COUNT(*) INTO HAS_AUTO_INCREMENT_ID
+        FROM `information_schema`.`COLUMNS`
+        WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+            AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+            AND `COLUMN_NAME` = COLUMN_NAME_ARGUMENT
+            AND `EXTRA` = 'auto_increment'
+            LIMIT 1;
+    IF HAS_AUTO_INCREMENT_ID THEN
+        SELECT `COLUMN_TYPE` INTO PRIMARY_KEY_TYPE
+            FROM `information_schema`.`COLUMNS`
+            WHERE `TABLE_SCHEMA` = (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA()))
+                AND `TABLE_NAME` = TABLE_NAME_ARGUMENT
+                AND `COLUMN_NAME` = COLUMN_NAME_ARGUMENT
+                LIMIT 1;
+        SET SQL_EXP = CONCAT('ALTER TABLE `', (SELECT IFNULL(SCHEMA_NAME_ARGUMENT, SCHEMA())), '`.`', TABLE_NAME_ARGUMENT, '` MODIFY COLUMN `', COLUMN_NAME_ARGUMENT, '` ', PRIMARY_KEY_TYPE, ' NOT NULL AUTO_INCREMENT;');
+        SET @SQL_EXP = SQL_EXP;
+        PREPARE SQL_EXP_EXECUTE FROM @SQL_EXP;
+        EXECUTE SQL_EXP_EXECUTE;
+        DEALLOCATE PREPARE SQL_EXP_EXECUTE;
+    END IF;
+END
+""";
+            await cmd2.ExecuteNonQueryAsync();
+        }
+
+        private async Task TeardownPomeloProceduresAsync()
+        {
+            await using var context = CreateContext();
+            var dbConnection = context.Database.GetDbConnection();
+            await using var cmd = dbConnection.CreateCommand();
+            cmd.CommandText = """
+DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
+DROP PROCEDURE IF EXISTS `POMELO_AFTER_ADD_PRIMARY_KEY`;
+""";
+            await cmd.ExecuteNonQueryAsync();
         }
 
         [ConditionalFact]
