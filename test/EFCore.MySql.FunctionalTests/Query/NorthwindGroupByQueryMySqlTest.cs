@@ -387,10 +387,10 @@ GROUP BY `o0`.`Name`, `o0`.`CustomerID`
 """
 SELECT `o`.`OrderDate` AS `Key`, CASE
     WHEN COUNT(*) = 0 THEN 1
-    ELSE COALESCE(SUM(CASE
+    ELSE (COALESCE(SUM(CASE
         WHEN (`o`.`OrderID` % 2) = 0 THEN 1
         ELSE 0
-    END), 0) / COUNT(*)
+    END), 0)) DIV (COUNT(*))
 END AS `SomeValue`
 FROM `Orders` AS `o`
 GROUP BY `o`.`OrderDate`
