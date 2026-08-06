@@ -1684,13 +1684,26 @@ SELECT NOT EXISTS (
     public override async Task Take_with_single(bool async)
     {
         await base.Take_with_single(async);
-        AssertSql();
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+LIMIT 1
+""");
     }
 
     public override async Task Take_with_single_select_many(bool async)
     {
         await base.Take_with_single_select_many(async);
-        AssertSql();
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+ORDER BY `c`.`CustomerID`, `o`.`OrderID`
+LIMIT 1
+""");
     }
 
     public override async Task Cast_results_to_object(bool async)
@@ -4331,13 +4344,29 @@ LIMIT @p1 OFFSET @p0
     public override async Task OrderBy_skip_take_take(bool async)
     {
         await base.OrderBy_skip_take_take(async);
-        AssertSql();
+        AssertSql(
+            """
+@p='5'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`ContactTitle`, `c`.`ContactName`
+LIMIT 3 OFFSET @p
+""");
     }
 
     public override async Task OrderBy_skip_take_take_take_take(bool async)
     {
         await base.OrderBy_skip_take_take_take_take(async);
-        AssertSql();
+        AssertSql(
+            """
+@p='5'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`ContactTitle`, `c`.`ContactName`
+LIMIT 5 OFFSET @p
+""");
     }
 
     public override async Task OrderBy_skip_take_skip_take_skip(bool async)
@@ -6603,7 +6632,12 @@ WHERE `c`.`CustomerID` = @p
     public override async Task Where_nanosecond_and_microsecond_component(bool async)
     {
         await base.Where_nanosecond_and_microsecond_component(async);
-        AssertSql();
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE FALSE
+""");
     }
 
     public override async Task Ternary_Not_Null_Contains(bool async)
