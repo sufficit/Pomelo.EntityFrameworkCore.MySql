@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestModels.BasicTypesModel;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
@@ -150,13 +151,33 @@ WHERE (EXTRACT(microsecond FROM `b`.`DateTimeOffset`)) DIV (1000) = 123
 """);
     }
 
-    // TODO: #3406
-    public override Task Microsecond()
-        => AssertTranslationFailed(() => base.Microsecond());
+    // MySQL supports Microsecond via EXTRACT(MICROSECOND ...) % 1000.
+    public override async Task Microsecond()
+    {
+        await base.Microsecond();
 
-    // TODO: #3406
-    public override Task Nanosecond()
-        => AssertTranslationFailed(() => base.Nanosecond());
+        AssertSql(
+            """
+SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
+FROM `BasicTypesEntities` AS `b`
+WHERE (EXTRACT(MICROSECOND FROM `b`.`DateTimeOffset`) % 1000) = 456
+""");
+    }
+
+    // MySQL has max microsecond precision; Nanosecond is always 0.
+    public override async Task Nanosecond()
+    {
+        await AssertQuery(
+            ss => ss.Set<BasicTypesEntity>().Where(b => b.DateTimeOffset.Nanosecond != 0),
+            assertEmpty: true);
+
+        AssertSql(
+"""
+SELECT `b`.`Id`, `b`.`Bool`, `b`.`Byte`, `b`.`ByteArray`, `b`.`DateOnly`, `b`.`DateTime`, `b`.`DateTimeOffset`, `b`.`Decimal`, `b`.`Double`, `b`.`Enum`, `b`.`FlagsEnum`, `b`.`Float`, `b`.`Guid`, `b`.`Int`, `b`.`Long`, `b`.`Short`, `b`.`String`, `b`.`TimeOnly`, `b`.`TimeSpan`
+FROM `BasicTypesEntities` AS `b`
+WHERE FALSE
+""");
+    }
 
     public override async Task TimeOfDay()
     {

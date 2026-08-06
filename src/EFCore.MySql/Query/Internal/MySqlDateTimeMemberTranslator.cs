@@ -50,7 +50,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             {
                 var memberName = member.Name;
 
-                // Microsecond and Nanosecond need special handling (modulo, not division).
+                // Microsecond needs special handling (modulo, not division).
                 if (memberName == nameof(DateTime.Microsecond))
                 {
                     // .NET Microsecond is the microsecond-within-millisecond (0-999).
@@ -74,10 +74,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     return _sqlExpressionFactory.Modulo(extract, _sqlExpressionFactory.Constant(1000));
                 }
 
+                // MySQL stores at most microsecond precision (6 fractional digits).
+                // .NET Nanosecond (0-900 in steps of 100) is always 0 in MySQL.
                 if (memberName == nameof(DateTime.Nanosecond))
                 {
-                    // MySQL stores at most microsecond precision (6 fractional digits).
-                    // .NET Nanosecond (0-900 in steps of 100) is always 0 in MySQL.
                     return _sqlExpressionFactory.Constant(0, returnType);
                 }
 
