@@ -102,8 +102,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         private static int GetCommandTimeout() => AppConfig.Config.GetValue("Data:CommandTimeout", DefaultCommandTimeout);
 
         public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
-            => _useConnectionString
-                ? builder.UseMySql(_connectionString, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes))
+            => (_useConnectionString || UseConnectionString)
+                ? builder.UseMySql(_connectionString ?? CreateConnectionString(Name, _noBackslashEscapes), AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes))
                 : builder.UseMySql(Connection, AppConfig.ServerVersion, x => AddOptions(x, _noBackslashEscapes));
 
         public static MySqlDbContextOptionsBuilder AddOptions(MySqlDbContextOptionsBuilder builder)
