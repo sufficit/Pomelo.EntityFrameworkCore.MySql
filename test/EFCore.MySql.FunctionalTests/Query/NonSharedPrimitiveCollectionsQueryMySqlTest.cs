@@ -488,11 +488,13 @@ LIMIT 2
     {
         await base.Parameter_collection_Count_with_column_predicate_with_default_mode(mode);
 
+        var rowSql = AppConfig.ServerVersion.Supports.ValuesWithRows ? "ROW" : string.Empty;
+
         switch (mode)
         {
             case ParameterTranslationMode.MultipleParameters:
                 AssertSql(
-                    """
+                    $"""
 @ids1='2'
 @ids2='999'
 
@@ -500,18 +502,18 @@ SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT @ids1 AS `Value` UNION ALL VALUES ROW(@ids2)) AS `i`
+    FROM (SELECT @ids1 AS `Value` UNION ALL VALUES {rowSql}(@ids2)) AS `i`
     WHERE `i`.`Value` > `t`.`Id`) = 1
 """);
                 break;
             case ParameterTranslationMode.Constant:
                 AssertSql(
-                    """
+                    $"""
 SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL VALUES ROW(999)) AS `i`
+    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL VALUES {rowSql}(999)) AS `i`
     WHERE `i`.`Value` > `t`.`Id`) = 1
 """);
                 break;
@@ -572,13 +574,16 @@ WHERE `t`.`Id` IN (2, 999)
     public override async Task Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Constant(ParameterTranslationMode mode)
     {
         await base.Parameter_collection_Count_with_column_predicate_with_default_mode_EF_Constant(mode);
+
+        var rowSql = AppConfig.ServerVersion.Supports.ValuesWithRows ? "ROW" : string.Empty;
+
         AssertSql(
-            """
+            $"""
 SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL VALUES ROW(999)) AS `i`
+    FROM (SELECT CAST(2 AS signed) AS `Value` UNION ALL VALUES {rowSql}(999)) AS `i`
     WHERE `i`.`Value` > `t`.`Id`) = 1
 """);
     }
@@ -609,8 +614,11 @@ WHERE `t`.`Id` IN (2, 999)
     public override async Task Parameter_collection_Count_with_column_predicate_with_default_mode_EF_MultipleParameters(ParameterTranslationMode mode)
     {
         await base.Parameter_collection_Count_with_column_predicate_with_default_mode_EF_MultipleParameters(mode);
+
+        var rowSql = AppConfig.ServerVersion.Supports.ValuesWithRows ? "ROW" : string.Empty;
+
         AssertSql(
-            """
+            $"""
 @ids1='2'
 @ids2='999'
 
@@ -618,7 +626,7 @@ SELECT `t`.`Id`
 FROM `TestEntity` AS `t`
 WHERE (
     SELECT COUNT(*)
-    FROM (SELECT @ids1 AS `Value` UNION ALL VALUES ROW(@ids2)) AS `i`
+    FROM (SELECT @ids1 AS `Value` UNION ALL VALUES {rowSql}(@ids2)) AS `i`
     WHERE `i`.`Value` > `t`.`Id`) = 1
 """);
     }

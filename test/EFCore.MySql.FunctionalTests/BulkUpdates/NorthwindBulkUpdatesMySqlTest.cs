@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
@@ -802,9 +803,17 @@ WHERE EXISTS (
     {
         if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
         {
-            // Not supported by MySQL and older MariaDB versions:
-            //     Error Code: 1093. You can't specify target table for update in FROM clause
-            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_with_cross_apply(async));
+            if (!AppConfig.ServerVersion.Supports.CrossApply)
+            {
+                // MariaDB does not support CROSS APPLY at all (MDEV-19078, MDEV-6373),
+                // so EF Core throws InvalidOperationException during translation.
+                await Assert.ThrowsAsync<InvalidOperationException>(() => base.Delete_with_cross_apply(async));
+            }
+            else
+            {
+                // MySQL error 1093: You can't specify target table for update in FROM clause
+                await Assert.ThrowsAsync<MySqlException>(() => base.Delete_with_cross_apply(async));
+            }
             return;
         }
         await base.Delete_with_cross_apply(async);
@@ -828,9 +837,17 @@ WHERE `o`.`OrderID` < 10276
     {
         if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
         {
-            // Not supported by MySQL and older MariaDB versions:
-            //     Error Code: 1093. You can't specify target table for update in FROM clause
-            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_with_outer_apply(async));
+            if (!AppConfig.ServerVersion.Supports.CrossApply)
+            {
+                // MariaDB does not support OUTER APPLY at all (MDEV-19078, MDEV-6373),
+                // so EF Core throws InvalidOperationException during translation.
+                await Assert.ThrowsAsync<InvalidOperationException>(() => base.Delete_with_outer_apply(async));
+            }
+            else
+            {
+                // MySQL error 1093: You can't specify target table for update in FROM clause
+                await Assert.ThrowsAsync<MySqlException>(() => base.Delete_with_outer_apply(async));
+            }
             return;
         }
         await base.Delete_with_outer_apply(async);
