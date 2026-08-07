@@ -44,6 +44,10 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
             conventionSet.PropertyAddedConventions.Add(new ColumnCharSetAttributeConvention(Dependencies));
             conventionSet.PropertyAddedConventions.Add(new ColumnCollationAttributeConvention(Dependencies));
 
+            // JSON structural mapping (.ToJson()) support for EF Core 10
+            conventionSet.ComplexPropertyAddedConventions.Add(new MySqlJsonColumnConvention(Dependencies, RelationalDependencies));
+            conventionSet.ComplexPropertyAnnotationChangedConventions.Add(new MySqlJsonColumnConvention(Dependencies, RelationalDependencies));
+
             var valueGenerationConvention = new MySqlValueGenerationConvention(Dependencies, RelationalDependencies);
             ReplaceConvention(conventionSet.EntityTypeBaseTypeChangedConventions, valueGenerationConvention);
             ReplaceConvention(conventionSet.EntityTypeAnnotationChangedConventions, (RelationalValueGenerationConvention)valueGenerationConvention);
