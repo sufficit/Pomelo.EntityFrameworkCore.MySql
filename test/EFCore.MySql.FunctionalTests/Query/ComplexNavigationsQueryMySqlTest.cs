@@ -8,7 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
+
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -76,8 +76,8 @@ LIMIT @p
         public override async Task Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(bool async)
         {
             // DefaultIfEmpty on child collection. Issue #19095.
-            await Assert.ThrowsAsync<EqualException>(
-                async () => await base.Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(async));
+            // EF Core 10 now translates this correctly.
+            await base.Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(async);
 
         AssertSql(
 """
