@@ -650,18 +650,7 @@ WHERE LCASE(`c`.`CustomerID`) LIKE CONVERT(LCASE('%nton') USING utf8mb4) COLLATE
         }
 
         [ConditionalTheory]
-        [InlineData(StringComparison.OrdinalIgnoreCase, 1, false)]
-        [InlineData(StringComparison.OrdinalIgnoreCase, 1, true)]
-        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1, false)]
-        [InlineData(StringComparison.CurrentCultureIgnoreCase, 1, true)]
-        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1, false)]
-        [InlineData(StringComparison.InvariantCultureIgnoreCase, 1, true)]
-        [InlineData(StringComparison.Ordinal, 0, false)]
-        [InlineData(StringComparison.Ordinal, 0, true)]
-        [InlineData(StringComparison.CurrentCulture, 0, false)]
-        [InlineData(StringComparison.CurrentCulture, 0, true)]
-        [InlineData(StringComparison.InvariantCulture, 0, false)]
-        [InlineData(StringComparison.InvariantCulture, 0, true)]
+        [MemberData(nameof(IsAsyncData))]
         public async Task StringEndsWith_parameter(bool async)
         {
             var pattern = "anto";
