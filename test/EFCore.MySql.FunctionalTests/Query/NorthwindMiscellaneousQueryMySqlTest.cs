@@ -6246,8 +6246,8 @@ ORDER BY `c`.`CustomerID`
             """
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
+WHERE FALSE
 ORDER BY `c`.`CustomerID`
-LIMIT 0 OFFSET 0
 """,
             //
             """
@@ -6268,9 +6268,7 @@ LIMIT @p OFFSET @p
 SELECT EXISTS (
     SELECT 1
     FROM `Orders` AS `o`
-    WHERE `c`.`CustomerID` = `o`.`CustomerID`
-    ORDER BY `o`.`OrderID`
-    LIMIT 0 OFFSET 0)
+    WHERE FALSE)
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` LIKE 'F%'
 ORDER BY `c`.`CustomerID`

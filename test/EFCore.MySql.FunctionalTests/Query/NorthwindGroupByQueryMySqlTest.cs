@@ -2608,7 +2608,7 @@ SELECT `o0`.`CustomerID` AS `Key`, COUNT(*) AS `Total`
 FROM (
     SELECT `o`.`CustomerID`
     FROM `Orders` AS `o`
-    LIMIT 0 OFFSET 0
+    WHERE FALSE
 ) AS `o0`
 GROUP BY `o0`.`CustomerID`
 """);
@@ -2624,7 +2624,7 @@ SELECT `o`.`CustomerID` AS `Key`, COUNT(*) AS `Total`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` > 10500
 GROUP BY `o`.`CustomerID`
-LIMIT 0 OFFSET 0
+HAVING FALSE
 """);
         }
 
@@ -3579,7 +3579,7 @@ ORDER BY `c`.`CustomerID`
 """
 SELECT `s`.`c`, `s`.`ProductID`, `c1`.`CustomerID`, `c1`.`City`
 FROM (
-    SELECT COALESCE(SUM(`o`.`ProductID` + (`o`.`OrderID` * 1000)), 0) AS `c`, `o`.`ProductID`, MIN(`o`.`OrderID` / 100) AS `c0`
+    SELECT COALESCE(SUM(`o`.`ProductID` + (`o`.`OrderID` * 1000)), 0) AS `c`, `o`.`ProductID`, MIN((`o`.`OrderID`) DIV (100)) AS `c0`
     FROM `Order Details` AS `o`
     INNER JOIN `Orders` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
     LEFT JOIN `Customers` AS `c` ON `o0`.`CustomerID` = `c`.`CustomerID`
