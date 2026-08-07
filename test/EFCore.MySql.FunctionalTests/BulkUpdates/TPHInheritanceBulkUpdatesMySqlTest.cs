@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -94,7 +95,14 @@ WHERE (
 
     public override async Task Delete_GroupBy_Where_Select_First_3(bool async)
     {
-        // MySQL 8+ supports target table in FROM clause for DELETE.
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            // Not supported by MySQL and older MariaDB versions:
+            //     Error Code: 1093. You can't specify target table 'a' for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_GroupBy_Where_Select_First_3(async));
+            return;
+        }
+
         await base.Delete_GroupBy_Where_Select_First_3(async);
 
         AssertSql(

@@ -26,6 +26,13 @@ public class NorthwindBulkUpdatesMySqlTest : NorthwindBulkUpdatesRelationalTestB
 
     public override async Task Delete_with_LeftJoin_via_flattened_GroupJoin(bool async)
     {
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            // Not supported by MySQL and older MariaDB versions:
+            //     Error Code: 1093. You can't specify target table for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_with_LeftJoin_via_flattened_GroupJoin(async));
+            return;
+        }
         await base.Delete_with_LeftJoin_via_flattened_GroupJoin(async);
         AssertSql(
             """
@@ -50,6 +57,13 @@ WHERE EXISTS (
 
     public override async Task Delete_with_RightJoin(bool async)
     {
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            // Not supported by MySQL and older MariaDB versions:
+            //     Error Code: 1093. You can't specify target table for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_with_RightJoin(async));
+            return;
+        }
         await base.Delete_with_RightJoin(async);
         AssertSql(
             """
@@ -227,6 +241,12 @@ WHERE FALSE
 
     public override async Task Delete_Where_OrderBy(bool async)
     {
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_Where_OrderBy(async));
+            return;
+        }
+
         await base.Delete_Where_OrderBy(async);
 
         AssertSql(
@@ -520,6 +540,13 @@ WHERE EXTRACT(year FROM `o0`.`OrderDate`) = 2000
 
     public override async Task Delete_Where_using_navigation_2(bool async)
     {
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            // Not supported by MySQL and older MariaDB versions:
+            //     Error Code: 1093. You can't specify target table for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_Where_using_navigation_2(async));
+            return;
+        }
         await base.Delete_Where_using_navigation_2(async);
         AssertSql(
             """
@@ -668,6 +695,13 @@ WHERE EXISTS (
 
     public override async Task Delete_Where_optional_navigation_predicate(bool async)
     {
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            // Not supported by MySQL and older MariaDB versions:
+            //     Error Code: 1093. You can't specify target table for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_Where_optional_navigation_predicate(async));
+            return;
+        }
         await base.Delete_Where_optional_navigation_predicate(async);
         AssertSql(
             """
@@ -705,6 +739,13 @@ INNER JOIN (
 
     public override async Task Delete_with_LeftJoin(bool async)
     {
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            // Not supported by MySQL and older MariaDB versions:
+            //     Error Code: 1093. You can't specify target table for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_with_LeftJoin(async));
+            return;
+        }
         await base.Delete_with_LeftJoin(async);
 
         AssertSql(
@@ -730,6 +771,13 @@ WHERE EXISTS (
 
     public override async Task Delete_with_cross_join(bool async)
     {
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            // Not supported by MySQL and older MariaDB versions:
+            //     Error Code: 1093. You can't specify target table for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_with_cross_join(async));
+            return;
+        }
         await base.Delete_with_cross_join(async);
 
         AssertSql(
@@ -752,6 +800,13 @@ WHERE EXISTS (
 
     public override async Task Delete_with_cross_apply(bool async)
     {
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            // Not supported by MySQL and older MariaDB versions:
+            //     Error Code: 1093. You can't specify target table for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_with_cross_apply(async));
+            return;
+        }
         await base.Delete_with_cross_apply(async);
 
         AssertSql(
@@ -771,6 +826,13 @@ WHERE `o`.`OrderID` < 10276
 
     public override async Task Delete_with_outer_apply(bool async)
     {
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            // Not supported by MySQL and older MariaDB versions:
+            //     Error Code: 1093. You can't specify target table for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_with_outer_apply(async));
+            return;
+        }
         await base.Delete_with_outer_apply(async);
 
         AssertSql(
