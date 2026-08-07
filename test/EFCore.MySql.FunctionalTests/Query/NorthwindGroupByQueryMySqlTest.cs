@@ -2604,13 +2604,11 @@ INNER JOIN (
 
             AssertSql(
                 """
-@p='0'
-
 SELECT `o0`.`CustomerID` AS `Key`, COUNT(*) AS `Total`
 FROM (
     SELECT `o`.`CustomerID`
     FROM `Orders` AS `o`
-    LIMIT @p OFFSET @p
+    LIMIT 0 OFFSET 0
 ) AS `o0`
 GROUP BY `o0`.`CustomerID`
 """);
@@ -2622,13 +2620,11 @@ GROUP BY `o0`.`CustomerID`
 
             AssertSql(
                 """
-@p='0'
-
 SELECT `o`.`CustomerID` AS `Key`, COUNT(*) AS `Total`
 FROM `Orders` AS `o`
 WHERE `o`.`OrderID` > 10500
 GROUP BY `o`.`CustomerID`
-LIMIT @p OFFSET @p
+LIMIT 0 OFFSET 0
 """);
         }
 

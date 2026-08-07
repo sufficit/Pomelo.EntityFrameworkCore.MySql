@@ -6244,12 +6244,10 @@ ORDER BY `c`.`CustomerID`
         await base.Skip_0_Take_0_works_when_parameter(async);
         AssertSql(
             """
-@p='0'
-
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 ORDER BY `c`.`CustomerID`
-LIMIT @p OFFSET @p
+LIMIT 0 OFFSET 0
 """,
             //
             """
