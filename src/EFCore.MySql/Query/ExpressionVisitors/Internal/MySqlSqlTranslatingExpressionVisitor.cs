@@ -70,17 +70,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             var defaultExpression = Visit(bipolarExpression.DefaultExpression) ?? QueryCompilationContext.NotTranslatedExpression;
             var alternativeExpression = Visit(bipolarExpression.AlternativeExpression) ?? QueryCompilationContext.NotTranslatedExpression;
 
-            return defaultExpression != QueryCompilationContext.NotTranslatedExpression
-                // ? alternativeExpression != QueryCompilationContext.NotTranslatedExpression
-                //     // ? new MySqlBipolarSqlExpression(
-                //     //     (SqlExpression)defaultExpression,
-                //     //     (SqlExpression)alternativeExpression)
-                //     ? QueryCompilationContext.NotTranslatedExpression
-                //     : (SqlExpression)defaultExpression
-                ? (SqlExpression)defaultExpression
-                : alternativeExpression != QueryCompilationContext.NotTranslatedExpression
-                    ? (SqlExpression)alternativeExpression
-                    : QueryCompilationContext.NotTranslatedExpression;
+            // In EF Core 10, visited expressions may be StructuralTypeReferenceExpression
+            // instead of SqlExpression, so check the type before casting to avoid InvalidCastException.
+            if (defaultExpression != QueryCompilationContext.NotTranslatedExpression && defaultExpression is SqlExpression)
+            {
+                return defaultExpression;
+            }
+
+            if (alternativeExpression != QueryCompilationContext.NotTranslatedExpression && alternativeExpression is SqlExpression)
+            {
+                return alternativeExpression;
+            }
+
+            return QueryCompilationContext.NotTranslatedExpression;
         }
 
         /// <inheritdoc />
