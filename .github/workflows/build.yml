@@ -227,18 +227,17 @@ jobs:
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         run: dotnet test test/EFCore.MySql.IntegrationTests -c Debug --no-build --filter "FullyQualifiedName~LegacyMigrations" --logger "GitHubActions;report-warnings=false"
-      - name: Integration Tests - Building migrations with EF_DATABASE = pomelo_test2
+      - name: Integration Tests - Setup pomelo_test2 database
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
         env:
           EF_DATABASE: pomelo_test2
-        run: dotnet test test/EFCore.MySql.IntegrationTests -c Debug --no-build --filter "FullyQualifiedName~Migrations" --logger "GitHubActions;report-warnings=false"
-      - name: Integration Tests - Setup migrations with EF_DATABASE = pomelo_test2
-        if: ${{ env.skipTests != 'true' }}
-        shell: pwsh
-        env:
-          EF_DATABASE: pomelo_test2
-        run: dotnet test test/EFCore.MySql.IntegrationTests -c Debug --no-build --filter "FullyQualifiedName~Scaffolding" --logger "GitHubActions;report-warnings=false"
+        run: |
+          ${{ env.clientCommandPrefix }} -u root -pPassword12! -e "CREATE DATABASE IF NOT EXISTS pomelo_test2;"
+          Push-Location test/EFCore.MySql.IntegrationTests
+          dotnet ef database drop -f --no-build
+          dotnet ef database update --no-build
+          Pop-Location
       - name: Integration Tests - With EF_DATABASE = pomelo_test2
         if: ${{ env.skipTests != 'true' }}
         shell: pwsh
