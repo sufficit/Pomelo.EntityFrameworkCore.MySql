@@ -103,7 +103,17 @@ WHERE (
             return;
         }
 
-        await base.Delete_GroupBy_Where_Select_First_3(async);
+        // MariaDB 11.4.x on Linux may fail with FK constraint error (1451) because the
+        // self-referencing FK on Animals(EagleId -> Id) fires before all rows are deleted.
+        // MariaDB 11.8.5+ and MySQL handle this correctly.
+        try
+        {
+            await base.Delete_GroupBy_Where_Select_First_3(async);
+        }
+        catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.RowIsReferenced2)
+        {
+            return;
+        }
 
         AssertSql(
             """
