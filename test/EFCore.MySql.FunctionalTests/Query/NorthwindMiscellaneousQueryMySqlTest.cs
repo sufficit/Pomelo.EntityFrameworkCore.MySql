@@ -6247,7 +6247,6 @@ ORDER BY `c`.`CustomerID`
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
 FROM `Customers` AS `c`
 WHERE FALSE
-ORDER BY `c`.`CustomerID`
 """,
             //
             """
