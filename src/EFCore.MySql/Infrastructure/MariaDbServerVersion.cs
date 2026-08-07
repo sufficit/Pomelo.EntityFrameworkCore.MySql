@@ -100,6 +100,7 @@ namespace Microsoft.EntityFrameworkCore
             public override bool FieldReferenceInTableValueConstructor => false;
             public override bool CollationCharacterSetApplicabilityWithFullCollationNameColumn => ServerVersion.Version >= new Version(10, 10, 1);
             public override bool DeleteWithSelfReferencingSubquery => ServerVersion.Version >= new Version(11, 0, 0);
+            public override bool MySqlBugLimit0Offset0ExistsWorkaround => true;
 
             public override bool JsonTableImplementationStable => false;
             public override bool JsonTableImplementationWithoutMariaDbBugs => false;
