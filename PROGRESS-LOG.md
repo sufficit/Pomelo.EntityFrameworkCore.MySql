@@ -144,10 +144,29 @@ Quatro bugs identificados ao revisar o código do microting:
 
 ## 5. Estado Atual do JSON Structural Mapping
 
-### O que existe hoje no nosso fork (suffcit)
-- **NÃO implementado.** Usamos workaround de ignorar coleções complexas.
-- Propriedades complexas não-coleção (ex: `Address` como `ComplexType` simples) funcionam
-  normalmente porque são mapeadas como colunas separadas (table-splitting).
+### ✅ IMPLEMENTADO (commit `77c5b0a2`, 08/Jan/2026)
+
+O suporte a JSON structural mapping (`.ToJson()`) foi implementado com sucesso!
+
+**Arquivos criados:**
+- `src/EFCore.MySql/Storage/Internal/MySqlStructuralJsonTypeMapping.cs` — type mapping para JSON container columns, lê via `DbDataReader.GetString` e converte para `MemoryStream` (análogo ao `SqlServerStructuralJsonTypeMapping`)
+- `src/EFCore.MySql/Metadata/Conventions/MySqlJsonColumnConvention.cs` — convention que seta `ContainerColumnType="json"` em complex types mapeados com `.ToJson()`
+
+**Arquivos modificados:**
+- `src/EFCore.MySql/Storage/Internal/MySqlTypeMappingSource.cs` — retorna `StructuralJsonTypeMapping` para `JsonTypePlaceholder` ClrType e storeType `"json"`
+- `src/EFCore.MySql/Metadata/Conventions/MySqlConventionSetBuilder.cs` — registra `MySqlJsonColumnConvention`
+- `src/EFCore.MySql/Metadata/Internal/MySqlAnnotationProvider.cs` — detecta JSON container columns e emite annotation `ColumnType="json"`
+
+**Resultados dos testes:**
+- ComplexTypesTrackingMySqlTest: **211 passed, 0 failed, 40 skipped** (skips são issues do EF Core base: #31411, #36483, #31621)
+- PropertyValuesMySqlTest: **196 passed, 0 failed, 4 skipped**
+- Build: **0 warnings, 0 errors**
+
+### Lições aprendidas
+1. `SetJsonPropertyName` e `SetContainerColumnName` são mutuamente exclusivos — só `SetContainerColumnName` é necessário (é o que `.ToJson()` faz internamente).
+2. Não precisa recriar a `RelationalMapToJsonConvention` — ela já vem do `RelationalConventionSetBuilder` base.
+3. Não incluir `Console.WriteLine` de debug em código de produção (erro do microting).
+4. JSON columns no MySQL são nativas (`JSON` type), não precisam de `nvarchar(max)` como no SQL Server.
 
 ### O que o microting tem (mas com problemas)
 1. **`MySqlStructuralJsonTypeMapping`** — type mapping para colunas JSON
