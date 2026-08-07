@@ -2047,7 +2047,25 @@ ORDER BY `c`.`CustomerID`
     public override async Task Select_correlated_subquery_ordered(bool async)
     {
         await base.Select_correlated_subquery_ordered(async);
-        AssertSql();
+        AssertSql(
+            """
+@p='3'
+
+SELECT `c0`.`CustomerID`, `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+FROM (
+    SELECT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`CustomerID`
+    LIMIT @p
+) AS `c0`
+LEFT JOIN LATERAL (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `c0`.`CustomerID` AS `CustomerID0`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`, `c0`.`CustomerID`
+    LIMIT 2 OFFSET 100
+) AS `o0` ON TRUE
+ORDER BY `c0`.`CustomerID`, `o0`.`OrderID`, `o0`.`CustomerID0`
+""");
     }
 
     public override async Task Select_nested_collection_in_anonymous_type_returning_ordered_queryable(bool async)
@@ -2082,7 +2100,17 @@ ORDER BY `c`.`CustomerID`, `o0`.`OrderID`
     public override async Task Select_subquery_recursive_trivial(bool async)
     {
         await base.Select_subquery_recursive_trivial(async);
-        AssertSql();
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `s`.`EmployeeID`, `s`.`EmployeeID0`, `s`.`City`, `s`.`Country`, `s`.`FirstName`, `s`.`ReportsTo`, `s`.`Title`
+FROM `Employees` AS `e`
+LEFT JOIN LATERAL (
+    SELECT `e0`.`EmployeeID`, `e1`.`EmployeeID` AS `EmployeeID0`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`
+    FROM `Employees` AS `e0`
+    LEFT JOIN `Employees` AS `e1` ON TRUE
+) AS `s` ON TRUE
+ORDER BY `e`.`EmployeeID`, `s`.`EmployeeID`, `s`.`EmployeeID0`
+""");
     }
 
     public override async Task Where_subquery_on_bool(bool async)
@@ -2607,13 +2635,48 @@ LEFT JOIN (
     public override async Task SelectMany_correlated_with_Select_value_type_and_DefaultIfEmpty_in_selector(bool async)
     {
         await base.SelectMany_correlated_with_Select_value_type_and_DefaultIfEmpty_in_selector(async);
-        AssertSql();
+        AssertSql(
+            """
+SELECT COALESCE(`o0`.`OrderID`, 0)
+FROM `Customers` AS `c`
+LEFT JOIN LATERAL (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    WHERE (`c`.`CustomerID` = `o`.`CustomerID`) AND (`o`.`CustomerID` = 'NONEXISTENT')
+    LIMIT 2
+) AS `o0` ON TRUE
+""");
     }
 
     public override async Task SelectMany_correlated_subquery_hard(bool async)
     {
         await base.SelectMany_correlated_subquery_hard(async);
-        AssertSql();
+        AssertSql(
+            """
+@p='91'
+
+SELECT `c1`.`City` AS `c1`, `e0`.`City`, `e0`.`c1`
+FROM (
+    SELECT DISTINCT `c0`.`City`
+    FROM (
+        SELECT `c`.`City`
+        FROM `Customers` AS `c`
+        LIMIT @p
+    ) AS `c0`
+) AS `c1`
+JOIN LATERAL (
+    SELECT `e`.`City`, `c1`.`City` AS `c1`
+    FROM `Employees` AS `e`
+    WHERE (`c1`.`City` = `e`.`City`) OR (`c1`.`City` IS NULL AND (`e`.`City` IS NULL))
+    LIMIT 9
+) AS `e0` ON TRUE
+JOIN LATERAL (
+    SELECT 1
+    FROM `Employees` AS `e1`
+    WHERE (`e0`.`City` = `e1`.`City`) OR (`e0`.`City` IS NULL AND (`e1`.`City` IS NULL))
+    LIMIT 9
+) AS `e2` ON TRUE
+""");
     }
 
     public override async Task SelectMany_cartesian_product_with_ordering(bool async)
@@ -4302,7 +4365,29 @@ ORDER BY `s`.`OrderID`, `o1`.`OrderDate`
     public override async Task DefaultIfEmpty_in_subquery_nested_filter_order_comparison(bool async)
     {
         await base.DefaultIfEmpty_in_subquery_nested_filter_order_comparison(async);
-        AssertSql();
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `s`.`OrderID`, `o2`.`OrderDate`
+FROM `Customers` AS `c`
+CROSS JOIN (
+    SELECT `o0`.`OrderID`
+    FROM (
+        SELECT 1
+    ) AS `e`
+    LEFT JOIN (
+        SELECT `o`.`OrderID`
+        FROM `Orders` AS `o`
+        WHERE `o`.`OrderID` > 11050
+    ) AS `o0` ON TRUE
+) AS `s`
+LEFT JOIN LATERAL (
+    SELECT `o1`.`OrderID`, `o1`.`OrderDate`
+    FROM `Orders` AS `o1`
+    WHERE `o1`.`OrderID` <= (CHAR_LENGTH(`c`.`CustomerID`) + 10250)
+) AS `o2` ON TRUE
+WHERE (`c`.`City` = 'Seattle') AND (`s`.`OrderID` IS NOT NULL AND (`o2`.`OrderID` IS NOT NULL))
+ORDER BY `s`.`OrderID`, `o2`.`OrderDate`
+""");
     }
 
     public override async Task OrderBy_skip_take(bool async)
@@ -6403,13 +6488,50 @@ FROM `Customers` AS `c`
     public override async Task Correlated_collection_with_distinct_without_default_identifiers_projecting_columns(bool async)
     {
         await base.Correlated_collection_with_distinct_without_default_identifiers_projecting_columns(async);
-        AssertSql();
+
+        if (AppConfig.ServerVersion.Supports.OuterApply)
+        {
+            AssertSql(
+                """
+SELECT `c`.`CustomerID`, `o0`.`First`, `o0`.`Second`
+FROM `Customers` AS `c`
+LEFT JOIN LATERAL (
+    SELECT DISTINCT `o`.`OrderID` AS `First`, `o`.`OrderDate` AS `Second`
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+) AS `o0` ON TRUE
+ORDER BY `c`.`CustomerID`
+""");
+        }
+        else
+        {
+            AssertSql();
+        }
     }
 
     public override async Task Correlated_collection_with_distinct_without_default_identifiers_projecting_columns_with_navigation(bool async)
     {
         await base.Correlated_collection_with_distinct_without_default_identifiers_projecting_columns_with_navigation(async);
-        AssertSql();
+
+        if (AppConfig.ServerVersion.Supports.OuterApply)
+        {
+            AssertSql(
+                """
+SELECT `c`.`CustomerID`, `s`.`First`, `s`.`Second`, `s`.`Third`
+FROM `Customers` AS `c`
+LEFT JOIN LATERAL (
+    SELECT DISTINCT `o`.`OrderID` AS `First`, `o`.`OrderDate` AS `Second`, `c0`.`City` AS `Third`
+    FROM `Orders` AS `o`
+    LEFT JOIN `Customers` AS `c0` ON `o`.`CustomerID` = `c0`.`CustomerID`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+) AS `s` ON TRUE
+ORDER BY `c`.`CustomerID`, `s`.`First`, `s`.`Second`
+""");
+        }
+        else
+        {
+            AssertSql();
+        }
     }
 
     public override async Task Select_nested_collection_with_distinct(bool async)
