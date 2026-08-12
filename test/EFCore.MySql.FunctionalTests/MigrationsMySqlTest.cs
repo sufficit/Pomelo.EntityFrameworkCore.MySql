@@ -2045,12 +2045,8 @@ SELECT ROW_COUNT();
 """);
         }
 
-        public override async Task Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH()
-        {
-            // EF Core 10 requires JSON container columns to have a provider-specific store type.
-            await Assert.ThrowsAsync<InvalidOperationException>(
-                () => base.Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH());
-        }
+        public override Task Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH()
+            => base.Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH();
 
         public override async Task Add_required_primitive_collection_to_existing_table()
         {
@@ -2168,53 +2164,149 @@ ALTER TABLE `Customers` ADD `Numbers` longtext CHARACTER SET utf8mb4 NOT NULL DE
 
         #region ToJson
 
+        // JSON column migration support was implemented (MySqlStructuralJsonTypeMapping, MySqlJsonColumnConvention).
+        // These tests now execute successfully instead of throwing InvalidOperationException.
+
         public override Task Create_table_with_json_column()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Create_table_with_json_column());
+            => base.Create_table_with_json_column();
 
         public override Task Create_table_with_json_column_explicit_json_column_names()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Create_table_with_json_column_explicit_json_column_names());
+            => base.Create_table_with_json_column_explicit_json_column_names();
 
-        public override Task Rename_table_with_json_column()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Rename_table_with_json_column());
+        public override async Task Rename_table_with_json_column()
+        {
+            await SetupPomeloProceduresAsync();
+            try
+            {
+                await base.Rename_table_with_json_column();
+            }
+            finally
+            {
+                await TeardownPomeloProceduresAsync();
+            }
+        }
 
         public override Task Add_json_columns_to_existing_table()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Add_json_columns_to_existing_table());
+            => base.Add_json_columns_to_existing_table();
 
         public override Task Convert_json_entities_to_regular_owned()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Convert_json_entities_to_regular_owned());
+            => base.Convert_json_entities_to_regular_owned();
 
         public override Task Convert_regular_owned_entities_to_json()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Convert_regular_owned_entities_to_json());
+            => base.Convert_regular_owned_entities_to_json();
 
-        public override Task Convert_string_column_to_a_json_column_containing_reference()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Convert_string_column_to_a_json_column_containing_reference());
+        public override async Task Convert_string_column_to_a_json_column_containing_reference()
+        {
+            await Test(
+                builder =>
+                {
+                    builder.Entity(
+                        "Entity", e =>
+                        {
+                            e.Property<int>("Id").ValueGeneratedOnAdd();
+                            e.HasKey("Id");
+                            e.Property<string>("Name");
+                        });
+                },
+                builder =>
+                {
+                    builder.Entity(
+                        "Entity", e =>
+                        {
+                            e.Property<int>("Id").ValueGeneratedOnAdd();
+                            e.HasKey("Id");
+
+                            e.OwnsOne(
+                                "Owned", "OwnedReference", o =>
+                                {
+                                    o.ToJson("Name");
+                                    o.OwnsOne("Nested", "NestedReference", n => n.Property<int>("Number"));
+                                    o.OwnsMany("Nested2", "NestedCollection", n => n.Property<int>("Number2"));
+                                    o.Property<DateTime>("Date");
+                                });
+                        });
+                },
+                model =>
+                {
+                    var table = model.Tables.Single();
+                    Assert.Collection(
+                        table.Columns,
+                        c => Assert.Equal("Id", c.Name),
+                        c => Assert.Equal("Name", c.Name));
+                });
+
+            AssertSql(
+"""
+ALTER TABLE `Entity` MODIFY COLUMN `Name` json NULL;
+""");
+        }
 
         public override Task Convert_string_column_to_a_json_column_containing_required_reference()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Convert_string_column_to_a_json_column_containing_required_reference());
+            => base.Convert_string_column_to_a_json_column_containing_required_reference();
 
-        public override Task Convert_string_column_to_a_json_column_containing_collection()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Convert_string_column_to_a_json_column_containing_collection());
+        public override async Task Convert_string_column_to_a_json_column_containing_collection()
+        {
+            await Test(
+                builder =>
+                {
+                    builder.Entity(
+                        "Entity", e =>
+                        {
+                            e.Property<int>("Id").ValueGeneratedOnAdd();
+                            e.HasKey("Id");
+                            e.Property<string>("Name");
+                        });
+                },
+                builder =>
+                {
+                    builder.Entity(
+                        "Entity", e =>
+                        {
+                            e.Property<int>("Id").ValueGeneratedOnAdd();
+                            e.HasKey("Id");
+
+                            e.OwnsMany(
+                                "Owned2", "OwnedCollection", o =>
+                                {
+                                    o.OwnsOne("Nested3", "NestedReference2", n => n.Property<int>("Number3"));
+                                    o.OwnsMany("Nested4", "NestedCollection2", n => n.Property<int>("Number4"));
+                                    o.Property<DateTime>("Date2");
+                                    o.ToJson("Name");
+                                });
+                        });
+                },
+                model =>
+                {
+                    var table = model.Tables.Single();
+                    Assert.Collection(
+                        table.Columns,
+                        c => Assert.Equal("Id", c.Name),
+                        c => Assert.Equal("Name", c.Name));
+                });
+
+            AssertSql(
+"""
+ALTER TABLE `Entity` MODIFY COLUMN `Name` json NULL;
+""");
+        }
 
         public override Task Drop_json_columns_from_existing_table()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Drop_json_columns_from_existing_table());
+            => base.Drop_json_columns_from_existing_table();
 
         public override Task Rename_json_column()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Rename_json_column());
+            => base.Rename_json_column();
 
         #endregion ToJson
 
+        // Complex type JSON migration support implemented.
         public override Task Create_table_with_complex_properties_mapped_to_json()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Create_table_with_complex_properties_mapped_to_json());
+            => base.Create_table_with_complex_properties_mapped_to_json();
 
         public override Task Create_table_with_complex_properties_with_nested_collection_mapped_to_json()
-            => Assert.ThrowsAsync<InvalidOperationException>(() => base.Create_table_with_complex_properties_with_nested_collection_mapped_to_json());
+            => base.Create_table_with_complex_properties_with_nested_collection_mapped_to_json();
 
-        public override async Task Create_table_with_optional_complex_type_with_required_properties()
-        {
-            // EF Core 10 requires JSON container columns to have a provider-specific store type.
-            await Assert.ThrowsAsync<InvalidOperationException>(
-                () => base.Create_table_with_optional_complex_type_with_required_properties());
-        }
+        public override Task Create_table_with_optional_complex_type_with_required_properties()
+            => base.Create_table_with_optional_complex_type_with_required_properties();
 
         public override async Task Multiop_drop_table_and_create_the_same_table_in_one_migration()
         {
