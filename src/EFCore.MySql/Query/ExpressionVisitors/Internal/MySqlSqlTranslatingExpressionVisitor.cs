@@ -100,7 +100,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 {
                     return _sqlExpressionFactory.NullableFunction(
                         "LENGTH",
-                        new[] {sqlOperand},
+                        new[] { sqlOperand },
                         typeof(int));
                 }
 

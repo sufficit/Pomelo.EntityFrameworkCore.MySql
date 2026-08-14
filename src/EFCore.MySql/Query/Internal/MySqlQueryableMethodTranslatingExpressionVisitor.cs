@@ -61,16 +61,16 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
     protected override bool IsNaturallyOrdered(SelectExpression selectExpression)
     {
         return selectExpression is
-               {
-                   Tables: [var mainTable, ..],
-                   Orderings:
+        {
+            Tables: [var mainTable, ..],
+            Orderings:
                    [
-                       {
-                           Expression: ColumnExpression { Name: "key", TableAlias: var orderingTable } orderingColumn,
-                           IsAscending: true
-                       }
+                {
+                    Expression: ColumnExpression { Name: "key", TableAlias: var orderingTable } orderingColumn,
+                    IsAscending: true
+                }
                    ]
-               }
+        }
                && orderingTable == mainTable.Alias
                && IsJsonEachKeyColumn(selectExpression, orderingColumn);
 
@@ -84,13 +84,13 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
 
     protected override bool IsValidSelectExpressionForExecuteDelete(SelectExpression selectExpression)
         => selectExpression is
-           {
-               Orderings: [],
-               Offset: null,
-               Limit: null,
-               GroupBy: [],
-               Having: null
-           } &&
+        {
+            Orderings: [],
+            Offset: null,
+            Limit: null,
+            GroupBy: [],
+            Having: null
+        } &&
            selectExpression.Tables[0] is TableExpression &&
            selectExpression.Tables.Skip(1).All(t => t is InnerJoinExpression);
 
@@ -174,9 +174,9 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                 Tables:
                 [
                     MySqlJsonTableExpression
-                    {
-                        Name: "JSON_TABLE", Schema: null, IsBuiltIn: true, JsonExpression: var jsonArrayColumn
-                    } jsonEachExpression
+                {
+                    Name: "JSON_TABLE", Schema: null, IsBuiltIn: true, JsonExpression: var jsonArrayColumn
+                } jsonEachExpression
                 ],
                 GroupBy: [],
                 Having: null,

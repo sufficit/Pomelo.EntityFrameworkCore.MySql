@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -265,7 +265,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // Guid
             if (_guid != null)
             {
-                _storeTypeMappings[_guid.StoreType] = new RelationalTypeMapping[]{ _guid };
+                _storeTypeMappings[_guid.StoreType] = new RelationalTypeMapping[] { _guid };
                 _clrTypeMappings[typeof(Guid)] = _guid;
             }
 

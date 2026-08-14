@@ -159,7 +159,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                     .MakeIndexOfExpression(instance, arguments[0]);
             }
 
-            if(_indexOfMethodInfoWithOneArg.Equals(method))
+            if (_indexOfMethodInfoWithOneArg.Equals(method))
             {
                 return new MySqlStringComparisonMethodTranslator(_sqlExpressionFactory, _queryCompilationContextResolver, _options)
                     .MakeIndexOfExpression(instance, arguments[0], startIndex: arguments[1]);
@@ -438,7 +438,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                 // Some call signature variants can never reach this code, because they will be directly called and thus only their result
                 // is translated.
                 var concatArguments = arguments[0] is MySqlComplexFunctionArgumentExpression mySqlComplexFunctionArgumentExpression
-                    ? new SqlExpression[] {mySqlComplexFunctionArgumentExpression}
+                    ? new SqlExpression[] { mySqlComplexFunctionArgumentExpression }
                     : arguments.Select(
                             e => e switch
                             {

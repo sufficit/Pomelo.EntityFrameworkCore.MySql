@@ -2,8 +2,8 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
 

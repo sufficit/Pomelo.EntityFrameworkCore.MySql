@@ -440,7 +440,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         {
             return properties.Select(p => p.GetCharSet()).FirstOrDefault(s => s is not null) ??
                    properties.Select(
-                           p => p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
+                           p => p.FindTypeMapping() is MySqlStringTypeMapping { IsNationalChar: false }
                                // An explicitly defined collation on the current property level takes precedence over an inherited charset.
                                ? p.DeclaringType is IEntityType entityType &&
                                  GetActualEntityTypeCharSet(entityType, currentLevel) is string charSet &&
@@ -470,10 +470,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                 ? properties.Select(p => p.GetMySqlLegacyCollation()).FirstOrDefault(c => c is not null) ??
                   properties.Select(
                           // An explicitly defined charset on the current property level takes precedence over an inherited collation.
-                          p => (p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false} &&
+                          p => (p.FindTypeMapping() is MySqlStringTypeMapping { IsNationalChar: false } &&
                                 p.DeclaringType is IEntityType entityType
                                    ? GetActualEntityTypeCollation(entityType, currentLevel)
-                                   : p.FindTypeMapping() is MySqlGuidTypeMapping {IsCharBasedStoreType: true}
+                                   : p.FindTypeMapping() is MySqlGuidTypeMapping { IsCharBasedStoreType: true }
                                        ? p.DeclaringType.Model.GetActualGuidCollation(_options.DefaultGuidCollation)
                                        : null) is string collation &&
                                (p.GetCharSet() is not string charSet ||

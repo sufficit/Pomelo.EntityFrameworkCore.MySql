@@ -147,7 +147,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                                 ? "UTC_TIMESTAMP"
                                 : "CURRENT_TIMESTAMP",
                             _mySqlOptions.ServerVersion.Supports.DateTime6 ?
-                                new [] { _sqlExpressionFactory.Constant(6)} :
+                                new[] { _sqlExpressionFactory.Constant(6) } :
                                 Array.Empty<SqlExpression>(),
                             returnType);
 
@@ -155,7 +155,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
                         return _sqlExpressionFactory.NonNullableFunction(
                             "UTC_TIMESTAMP",
                             _mySqlOptions.ServerVersion.Supports.DateTime6 ?
-                                new [] { _sqlExpressionFactory.Constant(6)} :
+                                new[] { _sqlExpressionFactory.Constant(6) } :
                                 ArraySegment<SqlExpression>.Empty,
                             returnType);
 
