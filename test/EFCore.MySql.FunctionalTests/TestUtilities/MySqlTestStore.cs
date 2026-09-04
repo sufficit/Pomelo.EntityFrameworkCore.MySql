@@ -159,10 +159,47 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
             }
         }
 
+        // CI runners occasionally kill/reset connections under parallel test load (e.g. "Couldn't connect to server",
+        // "Connect Timeout expired"). Retry those transient errors a couple of times before failing the test.
+        private const int TransientErrorRetryCount = 3;
+        private static readonly TimeSpan TransientErrorRetryDelay = TimeSpan.FromSeconds(2);
+
+        private static void OpenWithTransientRetry(DbConnection connection)
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    connection.Open();
+                    return;
+                }
+                catch (MySqlException e) when (attempt < TransientErrorRetryCount && e.IsTransient)
+                {
+                    System.Threading.Thread.Sleep(TransientErrorRetryDelay);
+                }
+            }
+        }
+
+        private static async Task OpenWithTransientRetryAsync(DbConnection connection)
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    await connection.OpenAsync();
+                    return;
+                }
+                catch (MySqlException e) when (attempt < TransientErrorRetryCount && e.IsTransient)
+                {
+                    await Task.Delay(TransientErrorRetryDelay);
+                }
+            }
+        }
+
         private async Task<bool> CreateDatabaseAsync(Func<DbContext, Task> clean)
         {
             await using var master = new MySqlConnection(CreateAdminConnectionString());
-            await master.OpenAsync();
+            await OpenWithTransientRetryAsync(master);
 
             string databaseSetupSql;
             if (await DatabaseExistsAsync(Name))
@@ -275,7 +312,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 connection.Close();
             }
 
-            connection.Open();
+            OpenWithTransientRetry(connection);
 
             try
             {
@@ -316,7 +353,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
                 await connection.CloseAsync();
             }
 
-            await connection.OpenAsync();
+            await OpenWithTransientRetryAsync(connection);
 
             try
             {
