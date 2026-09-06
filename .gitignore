@@ -338,3 +338,5 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+# Worktrees (padrao): arvores de trabalho em <repo>/.worktrees/
+**/.worktrees/
