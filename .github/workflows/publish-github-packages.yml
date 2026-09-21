@@ -1,0 +1,99 @@
+name: publish-github-packages
+
+# Publica o provider EF Core 10 deste fork no GitHub Packages da org sufficit
+# (https://nuget.pkg.github.com/sufficit/index.json).
+#
+# Motivo: o Pomelo.EntityFrameworkCore.MySql 10.0.0 não existe no nuget.org
+# (a linha oficial para no 9.0.0). Os repositórios privados da Sufficit que
+# dependem do EF Core 10 só conseguiam restaurar o pacote nos runners legados
+# aireset-ci, que tinham um feed de pasta em /opt/sufficit-nuget-feed. Publicar
+# aqui torna o pacote acessível a qualquer runner autenticado (inclusive o pool
+# linux-general do ci-k3s), sem feed local.
+#
+# Este repositório é PÚBLICO: os minutos de Actions são gratuitos.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão do pacote (ex.: 10.0.0)"
+        required: true
+        default: "10.0.0"
+        type: string
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-github-packages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Resolve version
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "release" ]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="${{ inputs.version }}"
+          fi
+          if [ -z "$version" ]; then
+            echo "::error::versão vazia" && exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Publicando versão $version" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Pack
+        shell: bash
+        env:
+          VERSION: ${{ steps.resolve.outputs.version }}
+        run: |
+          set -euo pipefail
+          # NuGetAudit=false: o único advisory é GHSA-23fw-v26w-5fgq em
+          # Microsoft.Build.Tasks.Git 8.0.0, dependência de BUILD-TIME do
+          # SourceLink que não compõe o output em runtime.
+          dotnet pack src/EFCore.MySql/EFCore.MySql.csproj \
+            --configuration Release \
+            --output artifacts/packages \
+            -p:Version="$VERSION" \
+            -p:NuGetAudit=false \
+            -p:RepositoryUrl="https://github.com/${{ github.repository }}" \
+            -p:RepositoryCommit="${{ github.sha }}" \
+            --nologo
+          ls -lh artifacts/packages
+
+      - name: Push to GitHub Packages
+        shell: bash
+        env:
+          NUGET_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          dotnet nuget push "artifacts/packages/*.nupkg" \
+            --skip-duplicate \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --api-key "$NUGET_TOKEN"
+
+      - name: Upload packages as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg-${{ steps.resolve.outputs.version }}
+          path: artifacts/packages/*
+          retention-days: 14
