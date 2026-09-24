@@ -1,0 +1,12 @@
+<Project>
+  <!-- Sombra do Directory.Build.props da raiz do fork: encadeia o original
+       (GetPathOfFileAbove) e acrescenta apenas a supressao pontual do advisory
+       GHSA-23fw-v26w-5fgq (Microsoft.Build.Tasks.Git 8.0.0, SourceLink,
+       pacote de BUILD-TIME que nao compoe o output em runtime).
+       Arquivo NAO rastreado pelo pin upstream lauxjpn @ ee9f858d;
+       o CI do mobile materializa este arquivo no checkout do fork. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-23fw-v26w-5fgq" />
+  </ItemGroup>
+</Project>
