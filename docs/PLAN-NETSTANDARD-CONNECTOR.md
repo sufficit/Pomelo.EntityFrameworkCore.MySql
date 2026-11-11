@@ -36,3 +36,5 @@ O perfil EFData com namespaces atualizados compilou netstandard2.0 em clone isol
 - EFData recompilado nos três assets; Standard por pacote passou build e audit sem vulneráveis nos três frameworks, 131 NUnit, 113 xUnit e 35 coleções. Base/Utils/Json tiveram apenas caps transitivos corrigidos e pacotes com proveniência para a composição net7.
 - A matriz geral do fork encontrou Pkcs 9.0.0 em IntegrationTests; adicionado pin central 9.0.23 e o restore da solution inteira passou sem desativar audit.
 - Probe offline passou a exercitar também o helper CloseAsync do EF Core com conexão fechada, sem rede; Windows CI confirma esse caminho nativo, enquanto Mono usa explicitamente --synchronous-io.
+
+A composição inicial usou 3.2.8-sufficit.1 e comprovou o funcionamento. Para não introduzir NU5104 em pacotes estáveis do EFData, a revisão final do provider é 3.2.8.1 (estável, revisão própria no quarto componente); mesma identidade de assembly e código testado. A versão preliminar permanece como evidência histórica, sem ser apagada.

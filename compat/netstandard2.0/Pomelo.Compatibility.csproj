@@ -6,7 +6,7 @@
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <AssemblyName>Pomelo.EntityFrameworkCore.MySql</AssemblyName>
     <RootNamespace>Pomelo.EntityFrameworkCore.MySql</RootNamespace>
-    <Version>3.2.8-sufficit.1</Version>
+    <Version>3.2.8.1</Version>
     <AssemblyVersion>3.2.7.0</AssemblyVersion>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../../Pomelo.snk</AssemblyOriginatorKeyFile>

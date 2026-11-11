@@ -7,7 +7,7 @@ MySqlConnector para a linha corrigida >=2.6.1. O projeto principal continua EF C
 Build: `dotnet pack compat/netstandard2.0/Pomelo.Compatibility.csproj -c Release`.
 O gerador extrai os fontes fixados em `obj`, incluindo recursos, e compila uma DLL
 assinada com a chave Pomelo original. O assembly conserva a identidade 3.2.7.0;
-o pacote é 3.2.8-sufficit.1 para não substituir o pacote publicado upstream.
+o pacote é 3.2.8.1 para não substituir o pacote publicado upstream.
 Consumidores que dependem do namespace antigo do conector precisam ser recompilados.
 
 [Plano e validação](../../docs/PLAN-NETSTANDARD-CONNECTOR.md).
