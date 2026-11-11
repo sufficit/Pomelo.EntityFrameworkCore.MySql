@@ -7,3 +7,7 @@ Regressão: provider 3.2.7 original com 2.6.1 falhou com TypeLoadException; prov
 Linha principal EF Core 10 passou 74 testes unitários com conector 2.6.1. O gate de audit encontrou também XML/Pkcs e SourceLink de build antigos; corrigidos por atualização de pacotes, sem desativar audit. Workflow de publicação passou a selecionar projeto 3.2 ou 10 conforme a versão e manteve audit ativo.
 
 Workflow específico verifica banco real em Linux e carga/modelo em .NET Framework nativo Windows. Resultado remoto e integração EFData/Standard seguem no [plano](../PLAN-NETSTANDARD-CONNECTOR.md). Nenhum deploy ou operação de negócio de produção.
+
+## Fechamento da entrega
+
+Fork estável 3.2.8.1 publicado: 43084271700 success. Compatibilidade Linux/MariaDB e Windows/Framework: 43084271987 success. Fonte d3e94fab; Standard 31ce9f6 validado nos três targets, audit limpo. Build geral da solução não é declarado aprovado por este registro. Nenhum deploy.
