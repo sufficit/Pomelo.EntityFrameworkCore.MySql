@@ -1,0 +1,56 @@
+name: Validate Framework compatibility provider
+on:
+  push:
+    branches: [main]
+    paths: ['compat/**', 'Directory.Packages.props', '.github/workflows/validate-compatibility.yml']
+  pull_request:
+    paths: ['compat/**', 'Directory.Packages.props', '.github/workflows/validate-compatibility.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: compat-test-only
+        ports: ['3306/tcp']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=12
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Real database regressions
+        env:
+          SUFFICIT_POMELO_COMPAT_TEST_CONNECTION: Server=127.0.0.1;Port=${{ job.services.mariadb.ports[3306] }};User ID=root;Password=compat-test-only;Database=pomelo_compat_test_ci;GuidFormat=Binary16;Pooling=false
+        run: dotnet run --project compat/netstandard2.0/checks/Checks.csproj -f net10.0 -c Release
+      - name: Pack compatibility provider
+        run: dotnet pack compat/netstandard2.0/Pomelo.Compatibility.csproj -c Release -o artifacts/compatibility -p:RepositoryCommit=${{ github.sha }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pomelo-compatibility
+          path: artifacts/compatibility/*.nupkg
+  framework:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build for .NET Framework
+        run: dotnet build compat/netstandard2.0/checks/Checks.csproj -f net472 -c Release -p:PythonExecutable=python
+      - name: Load signed provider, resources and model in .NET Framework
+        run: .\compat\netstandard2.0\checks\bin\Release\net472\Checks.exe --offline

@@ -159,3 +159,7 @@ We are always looking for additional core contributors. If you got a couple of h
 ## License
 
 [MIT](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/blob/main/LICENSE)
+
+[Compatibilidade netstandard2.0 e conector corrigido](docs/PLAN-NETSTANDARD-CONNECTOR.md).
+
+[Perfil EF Core 3.1 / netstandard2.0](compat/netstandard2.0/README.md).

@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Versão do pacote (ex.: 10.0.0)"
+        description: "Versão do pacote (10.0.0 ou 3.2.8-sufficit.1)"
         required: true
         default: "10.0.0"
         type: string
@@ -58,6 +58,12 @@ jobs:
           if [ -z "$version" ]; then
             echo "::error::versão vazia" && exit 1
           fi
+          case "$version" in
+            3.2.*) project="compat/netstandard2.0/Pomelo.Compatibility.csproj" ;;
+            10.*) project="src/EFCore.MySql/EFCore.MySql.csproj" ;;
+            *) echo "::error::unsupported provider line"; exit 1 ;;
+          esac
+          echo "project=$project" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "Publicando versão $version" >> "$GITHUB_STEP_SUMMARY"
 
@@ -65,16 +71,13 @@ jobs:
         shell: bash
         env:
           VERSION: ${{ steps.resolve.outputs.version }}
+          PROJECT: ${{ steps.resolve.outputs.project }}
         run: |
           set -euo pipefail
-          # NuGetAudit=false: o único advisory é GHSA-23fw-v26w-5fgq em
-          # Microsoft.Build.Tasks.Git 8.0.0, dependência de BUILD-TIME do
-          # SourceLink que não compõe o output em runtime.
-          dotnet pack src/EFCore.MySql/EFCore.MySql.csproj \
+          dotnet pack "$PROJECT" \
             --configuration Release \
             --output artifacts/packages \
             -p:Version="$VERSION" \
-            -p:NuGetAudit=false \
             -p:RepositoryUrl="https://github.com/${{ github.repository }}" \
             -p:RepositoryCommit="${{ github.sha }}" \
             --nologo
