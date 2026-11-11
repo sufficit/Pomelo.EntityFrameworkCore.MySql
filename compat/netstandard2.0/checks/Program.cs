@@ -36,6 +36,14 @@ internal static class Program
         {
             Require(context.Model.FindEntityType(typeof(Probe)) != null, "Model creation failed.");
             Require(context.Database.GetDbConnection().GetType() == typeof(MySqlConnection), "Provider uses the wrong connector.");
+            if (!synchronousIO)
+            {
+                var helpers = typeof(Microsoft.EntityFrameworkCore.Storage.RelationalConnection).Assembly
+                    .GetType("System.Data.Common.DbConnectionExtensions", true);
+                var close = helpers.GetMethod("CloseAsync", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                Require(close != null, "EF Core async connection helper is missing.");
+                await (Task)close.Invoke(null, new object[] { context.Database.GetDbConnection() });
+            }
             if (offline)
             {
                 Console.WriteLine("PASS assembly identity, resources, model and connector; no connection opened.");

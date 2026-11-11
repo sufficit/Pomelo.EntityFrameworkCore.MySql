@@ -59,5 +59,6 @@
     <!-- Pinned to patch transitive vulnerability NU1903 (GHSA-23rf-6693-g89p and related)
          pulled in by Microsoft.Build.Tasks.Core via Microsoft.CodeAnalysis.*. -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.23" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.23" />
   </ItemGroup>
 </Project>

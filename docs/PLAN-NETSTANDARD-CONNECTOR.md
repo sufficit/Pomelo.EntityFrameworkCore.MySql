@@ -6,8 +6,8 @@ Objetivo: usar o fork Sufficit para manter EF Core 3.1/netstandard2.0 com MySqlC
 
 1. [concluído] Criar perfil de build fixado em origin/3.2-maint (520f4dbc7733ca5f97122fdf0dddfcf77e1b6cef), portar namespaces/APIs e empacotar a partir de fonte.
 2. [concluído] Validar consultas, modelo, CRUD e transações do provider em MariaDB descartável e execução em Mono/.NET Framework.
-3. [em andamento] Recompilar o perfil congelado EFData, alinhar dependências dos consumidores e validar os três frameworks do Standard e audit transitivo.
-4. [pendente] Registrar atividades/proveniência, revisar arquivos próprios, commit/push na main nos repositórios afetados e conferir CI/publicação.
+3. [concluído] Recompilar o perfil congelado EFData, alinhar dependências dos consumidores e validar os três frameworks do Standard e audit transitivo.
+4. [em andamento] Registrar atividades/proveniência, revisar arquivos próprios, commit/push na main nos repositórios afetados e conferir CI/publicação.
 
 ## Restrições
 
@@ -29,3 +29,10 @@ Limitação encontrada: o EF Core 3.1 no Mono instalado falha no helper assíncr
 A validação da linha principal encontrou XML/Pkcs de build antigos vulneráveis (warnings-as-errors). Atualizados o servicing XML 9 e SourceLink 10 no produtor para executar os testes sem desativar audit.
 
 O perfil EFData com namespaces atualizados compilou netstandard2.0 em clone isolado (Base como irmão). A linha moderna passou 74 testes unitários depois de atualizar MySqlConnector e os pacotes de build vulneráveis. O push do fork nesta etapa habilita a validação nativa Windows/Framework antes da integração final; os demais checkpoints seguem pendentes.
+
+## Integração e publicação confirmadas
+
+- CI específico 43076481797: MariaDB Linux e loader/modelo Windows/.NET Framework success. Publicação GitHub Packages 43076959219: success, pacote 3.2.8-sufficit.1 da revisão c359524d.
+- EFData recompilado nos três assets; Standard por pacote passou build e audit sem vulneráveis nos três frameworks, 131 NUnit, 113 xUnit e 35 coleções. Base/Utils/Json tiveram apenas caps transitivos corrigidos e pacotes com proveniência para a composição net7.
+- A matriz geral do fork encontrou Pkcs 9.0.0 em IntegrationTests; adicionado pin central 9.0.23 e o restore da solution inteira passou sem desativar audit.
+- Probe offline passou a exercitar também o helper CloseAsync do EF Core com conexão fechada, sem rede; Windows CI confirma esse caminho nativo, enquanto Mono usa explicitamente --synchronous-io.
